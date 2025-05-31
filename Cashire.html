@@ -1,0 +1,1429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Live Orders Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* Custom styles not easily covered by Tailwind or for specific component overrides */
+    body {
+      font-family: 'Inter', sans-serif; /* Applied globally */
+    }
+
+    /* CSS Variables for a more maintainable color palette */
+    :root {
+      --color-primary: #4A90E2;
+      --color-secondary: #6DD47E;
+      --color-success: #28A745;
+      --color-danger: #DC3545;
+      --color-warning: #FFC107;
+      --text-dark: #343A40;
+      --text-medium: #6C757D;
+      --text-light: #ADB5BD;
+      --bg-page: #F8F9FA;
+      --bg-card: #FFFFFF;
+      --bg-header: #E9ECEF;
+      --border-light: #DEE2E6;
+    }
+
+    body {
+      background-color: var(--bg-page);
+      font-family: 'Inter', sans-serif;
+      color: var(--text-dark);
+    }
+
+    /* Custom switch styling */
+    .switch { position: relative; display: inline-block; width: 40px; height: 20px; }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: #ccc; border-radius: 20px; transition: .4s; }
+    .slider:before { content: ""; position: absolute; height: 14px; width: 14px; left: 3px; bottom: 3px; background: white; border-radius: 50%; transition: .4s; }
+    input:checked + .slider { background: var(--color-secondary); } /* Updated for theme green */
+
+    /* Platform specific colors - updated for theme */
+    .whatsapp { background-color: #25D366; }
+    .hungerstation { background-color: #E67E22; }
+    .toyou { background-color: #F39C12; }
+    .keeta { background-color: #FFCD38; color: black; }
+    .noon { background-color: #000; color: white; }
+    .qrcode { background-color: #3498DB; }
+
+    /* Status colors - updated for theme */
+    .status-pickup { background-color: #E0F2F7; color: #2196F3; } /* Light Blue with blue text */
+    .status-in-progress { background-color: #FFF3E0; color: #FF9800; } /* Light Orange with orange text */
+    .status-awaiting-pickup { background-color: #FFFDE7; color: #FFC107; } /* Very light yellow with yellow text */
+    .status-completed { background-color: #E8F5E9; color: #4CAF50; } /* Light green with green text */
+    .status-rejected { background-color: #FFEBEE; color: #F44336; } /* Light Red for rejected with darker red text */
+
+    .item-notes {
+        font-size: 0.9em;
+        color: var(--text-medium); /* Use theme text color */
+        margin-left: 15px;
+        font-style: italic;
+    }
+
+    /* Modal Overlay */
+    .modal-overlay {
+        background-color: rgba(0, 0, 0, 0.5); /* Darker overlay */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    /* Modal Content */
+    .modal-content {
+        background-color: var(--bg-card);
+        padding: 2rem; /* Increased padding */
+        border-radius: 0.75rem; /* More rounded corners */
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15); /* More prominent shadow */
+        width: 90%;
+        max-width: 400px;
+        position: relative;
+    }
+    .close-button {
+        position: absolute;
+        top: 0.5rem;
+        right: 1rem;
+        font-size: 2rem;
+        font-weight: bold;
+        cursor: pointer;
+        color: var(--text-light); /* Softer close button color */
+    }
+    .close-button:hover {
+        color: var(--text-dark); /* Darker on hover */
+    }
+
+    /* Adjusted button styling for consistency */
+    .btn {
+      padding: 0.5rem 1.25rem; /* py-2 px-5 */
+      border-radius: 0.5rem; /* rounded-lg */
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* shadow-md */
+      transition: all 0.3s ease-in-out;
+    }
+    .btn-primary {
+        background-color: var(--color-primary);
+        color: white;
+    }
+    .btn-primary:hover {
+        background-color: #357ABD; /* A slightly darker shade for hover */
+    }
+    .btn-secondary {
+        background-color: var(--bg-header);
+        color: var(--text-dark);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); /* shadow-sm */
+    }
+    .btn-secondary:hover {
+        background-color: #DDE0E3; /* Slightly darker grey */
+    }
+    .btn-success {
+      background-color: var(--color-success);
+      color: white;
+    }
+    .btn-success:hover {
+      background-color: #218838;
+    }
+    .btn-danger {
+      background-color: var(--color-danger);
+      color: white;
+    }
+    .btn-danger:hover {
+      background-color: #C82333;
+    }
+    .btn-default {
+      background-color: var(--bg-header);
+      color: var(--text-dark);
+    }
+    .btn-default:hover {
+      background-color: #d1d4d7;
+    }
+
+    .table-header-cell {
+      background-color: var(--bg-header);
+      color: var(--text-medium);
+      text-transform: uppercase;
+      font-size: 0.875rem; /* text-sm */
+      line-height: 1.5; /* leading-normal */
+      font-weight: 500; /* font-medium */
+      border-bottom: 1px solid var(--border-light);
+    }
+
+    .table-row-cell {
+      border-bottom: 1px solid var(--border-light);
+      padding-top: 1rem; /* py-4 */
+      padding-bottom: 1rem; /* py-4 */
+    }
+  </style>
+</head>
+<body class="bg-gray-100 p-5 min-h-screen flex flex-col items-center justify-center">
+
+<div id="logoutDiv" class="absolute top-4 right-4 z-10">
+  <button onclick="window.location.href='login_screen_final_clean.html'" class="text-red-600 font-bold bg-transparent border-none text-base cursor-pointer">Logout</button>
+</div>
+
+<div class="w-full max-w-7xl bg-white rounded-xl shadow-lg p-6 md:p-8">
+  <div class="flex flex-col md:flex-row justify-between items-center mb-6 border-b pb-4">
+    <div id="toggleLangDiv" class="absolute top-4 left-4 md:relative md:top-0 md:left-0 mb-4 md:mb-0">
+      <button id="toggleLangBtn" class="btn btn-primary" onclick="toggleLang()">العربية</button>
+    </div>
+    <h2 id="dashboardTitle" class="text-3xl font-semibold text-gray-800 text-center flex-grow">Order Dashboard</h2>
+    <div class="flex flex-wrap justify-center md:justify-end gap-2 mt-4 md:mt-0">
+      <button id="btn-in-progress" class="btn btn-primary">In Progress</button>
+      <button id="btn-awaiting-pickup" class="btn btn-primary bg-purple-600 hover:bg-purple-700">Awaiting Pickup</button>
+      <button id="btn-completed-orders" class="btn btn-success bg-teal-600 hover:bg-teal-700">Completed Orders</button>
+      <button id="btn-rejected-orders" class="btn btn-danger">Rejected Orders</button>
+      <button class="btn btn-default" onclick="toggleSession()">⋮</button>
+    </div>
+  </div>
+
+  <div id="livePage">
+    <div class="flex items-center mb-4">
+      <h2 id="liveOrdersTitle" class="text-2xl font-semibold text-gray-800 mr-auto ml-8">Live Orders</h2>
+    </div>
+    <div class="flex flex-wrap lg:flex-nowrap gap-6">
+      <div class="w-full lg:w-2/3 bg-gray-50 p-6 rounded-lg shadow-inner border border-gray-200">
+        <h3 id="ordersHeader" class="text-xl font-medium text-gray-700 mb-4">Orders</h3>
+        <div class="overflow-x-auto">
+          <table class="min-w-full bg-white border border-gray-300 rounded-lg shadow-sm">
+            <thead>
+              <tr>
+                <th id="th-id" class="table-header-cell py-3 px-6 text-left">ID</th>
+                <th id="th-source" class="table-header-cell py-3 px-6 text-left">Source</th>
+                <th id="th-status" class="table-header-cell py-3 px-6 text-left">Status</th>
+                <th id="th-items" class="table-header-cell py-3 px-6 text-left">Items</th>
+                <th id="th-cost" class="table-header-cell py-3 px-6 text-left">Cost</th>
+                <th id="th-action" class="table-header-cell py-3 px-6 text-left">Action</th>
+              </tr>
+            </thead>
+            <tbody id="ordersTable" class="text-gray-600 text-sm font-light"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="w-full lg:w-1/3 bg-gray-50 p-6 rounded-lg shadow-inner border border-gray-200">
+        <h3 id="stockHeader" class="text-xl font-medium text-gray-700 mb-4">Stock Control</h3>
+        <div id="stockPanel" class="space-y-4"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="inProgressPage" class="hidden">
+    <div class="flex items-center mb-4">
+        <div id="backBtnInProgressDiv" class="relative">
+            <button id="backBtnInProgress" class="btn btn-secondary" onclick="showLiveOrdersPage()">← Back</button>
+        </div>
+        <h3 id="inProgressHeader" class="text-2xl font-semibold text-gray-800 text-center flex-grow">In Progress Orders</h3>
+    </div>
+    <div class="flex flex-wrap lg:flex-nowrap gap-6">
+      <div class="w-full lg:w-2/3 bg-gray-50 p-6 rounded-lg shadow-inner border border-gray-200">
+        <table class="min-w-full bg-white border border-gray-300 rounded-lg shadow-sm">
+          <thead>
+            <tr>
+              <th class="table-header-cell py-3 px-6 text-left">ID</th><th class="table-header-cell py-3 px-6 text-left">Source</th><th class="table-header-cell py-3 px-6 text-left">Status</th><th class="table-header-cell py-3 px-6 text-left">Items</th><th class="table-header-cell py-3 px-6 text-left">Cost</th><th class="table-header-cell py-3 px-6 text-left">Action</th>
+            </tr>
+          </thead>
+          <tbody id="inProgressTable" class="text-gray-600 text-sm font-light"></tbody>
+        </table>
+      </div>
+      <div class="w-full lg:w-1/3 bg-gray-50 p-6 rounded-lg shadow-inner border border-gray-200">
+        <h3 id="stockHeaderInProgress" class="text-xl font-medium text-gray-700 mb-4">Stock Control</h3>
+        <div id="stockPanelInProgress" class="space-y-4"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="awaitingPickupPage" class="hidden">
+    <div class="flex items-center mb-4">
+        <div id="backBtnAwaitingPickupDiv" class="relative">
+            <button id="backBtnAwaitingPickup" class="btn btn-secondary" onclick="showInProgressOrdersPage()">← Back</button>
+        </div>
+        <h3 id="awaitingPickupHeader" class="text-2xl font-semibold text-gray-800 text-center flex-grow">Awaiting Pickup Orders</h3>
+    </div>
+    <div class="flex flex-wrap lg:flex-nowrap gap-6">
+      <div class="w-full lg:w-2/3 bg-gray-50 p-6 rounded-lg shadow-inner border border-gray-200">
+        <table class="min-w-full bg-white border border-gray-300 rounded-lg shadow-sm">
+          <thead>
+            <tr>
+              <th class="table-header-cell py-3 px-6 text-left">ID</th><th class="table-header-cell py-3 px-6 text-left">Source</th><th class="table-header-cell py-3 px-6 text-left">Status</th><th class="table-header-cell py-3 px-6 text-left">Items</th><th class="table-header-cell py-3 px-6 text-left">Cost</th><th class="table-header-cell py-3 px-6 text-left">Action</th>
+            </tr>
+          </thead>
+          <tbody id="awaitingPickupTable" class="text-gray-600 text-sm font-light"></tbody>
+        </table>
+      </div>
+      <div class="w-full lg:w-1/3 bg-gray-50 p-6 rounded-lg shadow-inner border border-gray-200">
+        <h3 id="stockHeaderAwaitingPickup" class="text-xl font-medium text-gray-700 mb-4">Stock Control</h3>
+        <div id="stockPanelAwaitingPickup" class="space-y-4"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="completedOrdersPage" class="hidden">
+    <div class="flex items-center mb-4">
+        <div id="backBtnCompletedDiv" class="relative">
+            <button id="backBtnCompleted" class="btn btn-secondary" onclick="showLiveOrdersPage()">← Back</button>
+        </div>
+        <h2 id="completedOrdersTitle" class="text-2xl font-semibold text-gray-800 text-center flex-grow">Completed Orders</h2>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="min-w-full bg-white border border-gray-300 rounded-lg shadow-sm">
+        <thead>
+          <tr>
+            <th id="cth-id" class="table-header-cell py-3 px-6 text-left">ID</th>
+            <th id="cth-source" class="table-header-cell py-3 px-6 text-left">Source</th>
+            <th id="cth-status" class="table-header-cell py-3 px-6 text-left">Status</th>
+            <th id="cth-time" class="table-header-cell py-3 px-6 text-left">Time</th>
+            <th id="cth-cost" class="table-header-cell py-3 px-6 text-left">Cost</th>
+          </tr>
+        </thead>
+        <tbody id="completedTable" class="text-gray-600 text-sm font-light"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div id="rejectedOrdersPage" class="hidden">
+    <div class="flex items-center mb-4">
+        <div id="backBtnRejectedDiv" class="relative">
+            <button id="backBtnRejected" class="btn btn-secondary" onclick="showLiveOrdersPage()">← Back</button>
+        </div>
+        <h2 id="rejectedOrdersTitle" class="text-2xl font-semibold text-gray-800 text-center flex-grow">Rejected Orders</h2>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="min-w-full bg-white border border-gray-300 rounded-lg shadow-sm">
+        <thead>
+          <tr>
+            <th id="rth-id" class="table-header-cell py-3 px-6 text-left">ID</th>
+            <th id="rth-source" class="table-header-cell py-3 px-6 text-left">Source</th>
+            <th id="rth-status" class="table-header-cell py-3 px-6 text-left">Status</th>
+            <th id="rth-time" class="table-header-cell py-3 px-6 text-left">Time</th>
+            <th id="rth-cost" class="table-header-cell py-3 px-6 text-left">Cost</th>
+          </tr>
+        </thead>
+        <tbody id="rejectedTable" class="text-gray-600 text-sm font-light"></tbody>
+      </table>
+    </div>
+  </div>
+  <div id="sessionModal" class="hidden fixed top-20 right-8 bg-white p-6 w-72 rounded-lg shadow-xl z-50">
+    <h4 id="sessionSettingsTitle" class="text-lg font-semibold text-gray-800 mb-4">Session Settings</h4>
+    <div class="session-row flex justify-between items-center mb-3">
+      <span class="text-gray-700">Auto-Receive</span>
+      <label class="switch"><input type="checkbox" id="autoReceiveToggle"><span class="slider"></span></label>
+    </div>
+    <div class="session-row flex justify-between items-center mb-3">
+      <span class="text-gray-700">Busy Mode</span>
+      <label class="switch"><input type="checkbox" id="busyModeToggle" onchange="handleBusyModeToggle()"><span class="slider"></span></label>
+    </div>
+    <h4 id="deliveryAppsTitle" class="text-lg font-semibold text-gray-800 mt-6 mb-4">Delivery Apps</h4>
+    <div class="session-row flex justify-between items-center mb-3"><span class="text-gray-700">WhatsApp</span><label class="switch"><input type="checkbox" id="whatsAppToggle" checked disabled><span class="slider"></span></label></div>
+    <div class="session-row flex justify-between items-center mb-3"><span class="text-gray-700">QR Code</span><label class="switch"><input type="checkbox" id="qrCodeToggle" checked disabled><span class="slider"></span></label></div>
+    <div class="session-row flex justify-between items-center mb-3"><span class="text-gray-700">HungerStation</span><label class="switch"><input type="checkbox" id="hungerStationToggle" disabled><span class="slider"></span></label></div>
+    <div class="session-row flex justify-between items-center mb-3"><span class="text-gray-700">Jahez</span><label class="switch"><input type="checkbox" id="jahezToggle" disabled><span class="slider"></span></label></div>
+    <div class="session-row flex justify-between items-center mb-3"><span class="text-gray-700">ToYou</span><label class="switch"><input type="checkbox" id="toYouToggle" disabled><span class="slider"></span></label></div>
+    <div class="session-row flex justify-between items-center mb-3"><span class="text-gray-700">Noon</span><label class="switch"><input type="checkbox" id="noonToggle" disabled><span class="slider"></span></label></div>
+    <div id="saveSettingsDiv" class="text-right mt-4">
+      <button id="saveSettingsBtn" class="btn btn-success" onclick="saveSessionSettings()">Save Changes</button>
+    </div>
+  </div>
+
+  <div id="orderDetailsModal" class="modal-overlay hidden fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+    <div class="modal-content bg-white p-6 rounded-lg shadow-2xl w-11/12 max-w-md relative">
+      <span class="close-button absolute top-2 right-4 text-gray-500 text-3xl font-bold cursor-pointer hover:text-gray-800" onclick="closeOrderDetailsModal()">&times;</span>
+      <h3 id="orderDetailsTitle" class="text-2xl font-semibold text-gray-800 mb-4">Order Details</h3>
+      <div id="orderDetailsContent" class="text-gray-700">
+        <p class="mb-1"><strong>Order ID:</strong> <span id="modalOrderId"></span></p>
+        <p class="mb-1"><strong>Source:</strong> <span id="modalOrderSource"></span></p>
+        <p class="mb-1"><strong>Status:</strong> <span id="modalOrderStatus"></span></p>
+        <p class="mb-1"><strong>Branch:</strong> <span id="modalOrderBranch"></span></p>
+        <p class="mb-1"><strong>Time:</b> <span id="modalOrderTime"></span></p>
+        <h4 class="text-xl font-medium text-gray-800 mt-4 mb-2">Items:</h4>
+        <ul id="modalOrderItems" class="list-none p-0 mt-2 border-t border-gray-200 pt-2"></ul>
+        <p class="mt-4 text-lg font-semibold"><strong>Total Cost:</strong> <span id="modalOrderTotalCost"></span></p>
+      </div>
+    </div>
+  </div>
+
+  <div id="confirmationModal" class="modal-overlay hidden fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+    <div class="modal-content bg-white p-6 rounded-lg shadow-2xl w-11/12 max-w-sm relative">
+      <h3 id="confirmationModalTitle" class="text-xl font-semibold text-gray-800 mb-4">Confirmation</h3>
+      <p id="confirmationModalMessage" class="text-gray-700 mb-6"></p>
+      <div class="flex justify-end gap-3">
+        <button id="confirmBtn" class="btn btn-danger">Confirm</button>
+        <button id="cancelBtn" class="btn btn-secondary">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="messageModal" class="modal-overlay hidden fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+    <div class="modal-content bg-white p-6 rounded-lg shadow-2xl w-11/12 max-w-sm relative">
+      <h3 id="messageModalTitle" class="text-xl font-semibold text-gray-800 mb-4">Notification</h3>
+      <p id="messageModalMessage" class="text-gray-700 mb-6"></p>
+      <div class="flex justify-end">
+        <button id="messageOkBtn" class="btn btn-primary">OK</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let nextId = 1000;
+    let completedOrders = [];
+    let rejectedOrders = []; // New array for rejected orders
+    const branches = ["حي المغرزات", "حي الورد", "اليرموك", "اشبلية", "قرطبة"];
+    // Modified: Only WhatsApp and QR Code for new order generation
+    const platforms = ["WhatsApp", "QR Code"];
+    const stockItems = [
+      { name: "Pizza", price: 25 },
+      { name: "Burger", price: 15 },
+      { name: "Shawarma", price: 10 },
+      { name: "Fries", price: 7 },
+      { name: "Soda", price: 5 },
+      { name: "Kabsa", price: 30 },
+      { name: "Crepe", price: 12 },
+      { name: "Juice", price: 8 }
+    ];
+    const branchLoad = {}; branches.forEach(b => branchLoad[b] = 0);
+    let autoReceive = false;
+    const orderItemsMap = {}; // Stores full order details including English names for items, source, status
+
+    // Global variables for busy mode, moved here for correct scope
+    let isBusy = false;
+    let busyTimeout = null;
+
+    // Initialize stock quantities for all items
+    const stockQuantities = {};
+    stockItems.forEach(item => {
+        stockQuantities[item.name] = 10; // Default stock quantity
+    });
+
+    let currentLang = 'en'; // Default language
+
+    // --- Translation Maps ---
+    const translationMaps = {
+        platforms: {
+            "WhatsApp": { en: "WhatsApp", ar: "واتساب" },
+            "HungerStation": { en: "HungerStation", ar: "هنقرستيشن" },
+            "ToYou": { en: "ToYou", ar: "تويو" },
+            "Keeta": { en: "Keeta", ar: "كيتا" },
+            "Noon": { en: "Noon", ar: "نون" },
+            "QR Code": { en: "QR Code", ar: "رمز الاستجابة السريعة" }
+        },
+        statuses: {
+            "Pickup": { en: "Pickup", ar: "استلام" },
+            "In Progress": { en: "In Progress", ar: "قيد التنفيذ" },
+            "Food Ready": { en: "Food Ready", ar: "الطعام جاهز" }, // Button text
+            "Acknowledge": { en: "Acknowledge", ar: "قبول" }, // Button text
+            "Awaiting Pickup": { en: "Awaiting Pickup", ar: "في انتظار الاستلام" },
+            "Dispatch": { en: "Dispatch", ar: "إرسال" }, // Button text
+            "Completed": { en: "Completed", ar: "مكتمل" },
+            "Complete": { en: "Complete", ar: "إتمام" }, // Button text
+            "Rejected": { en: "Rejected", ar: "مرفوض" }, // New status for rejected orders
+            "Reject": { en: "Reject", ar: "رفض" } // New: Reject button text
+        },
+        itemNames: {
+            "Pizza": { en: "Pizza", ar: "بيتزا" },
+            "Burger": { en: "Burger", ar: "برجر" },
+            "Shawarma": { en: "Shawarma", ar: "شاورما" },
+            "Fries": { en: "Fries", ar: "بطاطس" },
+            "Soda": { en: "Soda", ar: "صودا" },
+            "Kabsa": { en: "Kabsa", ar: "كبسة" },
+            "Crepe": { en: "Crepe", ar: "كريب" },
+            "Juice": { en: "Juice", ar: "عصير" }
+        },
+        itemNotes: {
+            "No onions": { en: "No onions", ar: "بدون بصل" },
+            "Extra cheese": { en: "Extra cheese", ar: "جبنة إضافية" },
+            "Side of ketchup": { en: "Side of ketchup", ar: "جانب كاتشب" },
+            "Well done": { en: "Well done", ar: "مطهو جيداً" },
+            "Light sauce": { en: "Light sauce", ar: "صلصة خفيفة" },
+            "No pickles": { en: "No pickles", ar: "بدون مخلل" },
+            "Add chili flakes": { en: "Add chili flakes", ar: "إضافة رقائق الفلفل" },
+            "Gluten-free bun": { en: "Gluten-free bun", ar: "خبز خالي من الغلوتين" },
+            "Extra crispy fries": { en: "Extra crispy fries", ar: "بطاطس مقرمشة إضافية" }
+        },
+        branches: {
+            "حي المغرزات": { en: "Al-Magharizat", ar: "حي المغرزات" },
+            "حي الورد": { en: "Al-Ward", ar: "حي الورد" },
+            "اليرموك": { en: "Al-Yarmouk", ar: "اليرموك" },
+            "اشبلية": { en: "Ishbiliyah", ar: "اشبلية" },
+            "قرطبة": { en: "Qurtubah", ar: "قرطبة" }
+        },
+        // General UI translations
+        "dashboardTitle": { en: "Order Dashboard", ar: "لوحة تحكم الطلبات" },
+        "liveOrders": { en: "Live Orders", ar: "الطلبات الحالية" },
+        "inProgress": { en: "In Progress", ar: "قيد التنفيذ" },
+        "awaitingPickup": { en: "Awaiting Pickup", ar: "في انتظار الاستلام" },
+        "completedOrders": { en: "Completed Orders", ar: "الطلبات المكتملة" },
+        "rejectedOrders": { en: "Rejected Orders", ar: "الطلبات المرفوضة" }, // New translation
+        "orders": { en: "Orders", ar: "الطلبات" },
+        "stockControl": { en: "Stock Control", ar: "التحكم بالمخزون" },
+        "sessionSettings": { en: "Session Settings", ar: "إعدادات الجلسة" },
+        "deliveryApps": { en: "Delivery Apps", ar: "تطبيقات التوصيل" },
+        "saveChanges": { en: "Save Changes", ar: "حفظ التغييرات" },
+        "backBtn": { en: "← Back", ar: "عودة ←" },
+        "orderId": { en: "ID", ar: "معرف" },
+        "source": { en: "Source", ar: "المصدر" },
+        "status": { en: "Status", ar: "الحالة" },
+        "items": { en: "Items", ar: "العناصر" },
+        "cost": { en: "Cost", ar: "التكلفة" },
+        "time": { en: "Time", ar: "الوقت" },
+        "totalCost": { en: "Total Cost", ar: "التكلفة الإجمالية" },
+        "orderDetailsTitle": { en: "Order Details", ar: "تفاصيل الطلب" },
+        "modalOrderId": { en: "Order ID", ar: "معرف الطلب" },
+        "modalOrderSource": { en: "Source", ar: "المصدر" },
+        "modalOrderStatus": { en: "Status", ar: "الحالة" },
+        "modalOrderBranch": { en : "Branch", ar: "الفرع" },
+        "modalOrderTime": { en: "Time", ar: "الوقت" },
+        "modalItems": { en: "Items", ar: "العناصر" },
+        "is out of stock!": { en: " is out of stock!", ar: " نفد من المخزون!" },
+        "Session settings saved.": {en: "Session settings saved.", ar: "تم حفظ إعدادات الجلسة."},
+        // New translations for rejection modal
+        "Are you sure you want to reject order": { en: "Are you sure you want to reject order", ar: "هل أنت متأكد أنك تريد رفض الطلب" },
+        "Order": { en: "Order", ar: "الطلب" },
+        "has been rejected.": { en: "has been rejected.", ar: "تم رفض الطلب." },
+        "Invalid input. Busy Mode not activated.": {en: "Invalid input. Busy Mode not activated.", ar: "إدخال غير صالح. وضع الانشغال غير مفعل."},
+        "Busy Mode has been turned off automatically.": {en: "Busy Mode has been turned off automatically.", ar: "تم إيقاف وضع الانشغال تلقائياً."}
+    };
+
+    function getTranslation(key, type = 'general') {
+        let map;
+        if (type === 'platform') map = translationMaps.platforms;
+        else if (type === 'status') map = translationMaps.statuses;
+        else if (type === 'item') map = translationMaps.itemNames;
+        else if (type === 'note') map = translationMaps.itemNotes;
+        else if (type === 'branch') map = translationMaps.branches;
+        else map = translationMaps; // For general UI strings
+
+        if (map && map[key] && map[key][currentLang]) {
+            return map[key][currentLang];
+        }
+        return key; // Fallback to original key if no translation found
+    }
+
+    function getCurrencySymbol() {
+        return currentLang === 'ar' ? ' ر.س' : ' SAR';
+    }
+
+    // --- Custom Modals Functions ---
+    let confirmationCallback = null;
+
+    function showConfirmationModal(message, onConfirm) {
+        document.getElementById("confirmationModalMessage").textContent = message;
+        document.getElementById("confirmationModal").classList.remove("hidden");
+        confirmationCallback = onConfirm;
+
+        document.getElementById("confirmBtn").onclick = () => {
+            closeConfirmationModal();
+            if (confirmationCallback) confirmationCallback(true);
+        };
+        document.getElementById("cancelBtn").onclick = () => {
+            closeConfirmationModal();
+            if (confirmationCallback) confirmationCallback(false);
+        };
+    }
+
+    function closeConfirmationModal() {
+        document.getElementById("confirmationModal").classList.add("hidden");
+        confirmationCallback = null;
+    }
+
+    function showMessageModal(message, title = "Notification") {
+        document.getElementById("messageModalTitle").textContent = title;
+        document.getElementById("messageModalMessage").textContent = message;
+        document.getElementById("messageModal").classList.remove("hidden");
+        document.getElementById("messageOkBtn").onclick = () => {
+            document.getElementById("messageModal").classList.add("hidden");
+        };
+    }
+    // --- End Custom Modals Functions ---
+
+    // --- Audio Context and Sound Generation ---
+    let audioContext;
+    let audioUnlocked = false; // Flag to track if audio playback is allowed
+
+    // Initialize AudioContext and setup listener to resume on first user interaction
+    function initAudio() {
+        if (!audioContext) {
+            audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            // Attempt to resume context on first user interaction (click or touch)
+            document.body.addEventListener('click', resumeAudioContext, { once: true });
+            document.body.addEventListener('touchstart', resumeAudioContext, { once: true });
+        }
+    }
+
+    // Function to resume the AudioContext if it's suspended
+    function resumeAudioContext() {
+        if (audioContext && audioContext.state === 'suspended') {
+            audioContext.resume().then(() => {
+                console.log('AudioContext resumed successfully.');
+                audioUnlocked = true;
+            }).catch(e => console.error('Error resuming AudioContext:', e));
+        } else {
+            audioUnlocked = true; // Already running or not suspended
+        }
+    }
+
+    // Function to play a simple beep sound for new orders
+    function playNewOrderSound() {
+        if (!audioUnlocked) {
+            console.log('Audio not yet unlocked by user interaction. Cannot play new order sound.');
+            return;
+        }
+        if (!audioContext) {
+            console.error('AudioContext not initialized for new order sound.');
+            return;
+        }
+
+        try {
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+
+            oscillator.type = 'sine';
+            oscillator.frequency.setValueAtTime(880, audioContext.currentTime); // A5 frequency
+            gainNode.gain.setValueAtTime(0.5, audioContext.currentTime); // Volume
+
+            oscillator.start(audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.3); // Fade out
+            oscillator.stop(audioContext.currentTime + 0.3);
+        } catch (e) {
+            console.error("Error playing new order sound:", e);
+        }
+    }
+
+    // Function to play a short ding sound for rejections
+    function playDingSound() {
+        if (!audioUnlocked) {
+            console.log('Audio not yet unlocked by user interaction. Cannot play ding sound.');
+            return;
+        }
+        if (!audioContext) {
+            console.error('AudioContext not initialized for ding sound.');
+            return;
+        }
+
+        try {
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+
+            oscillator.type = 'sine';
+            oscillator.frequency.setValueAtTime(440, audioContext.currentTime); // A4 frequency
+            gainNode.gain.setValueAtTime(0.5, audioContext.currentTime); // Volume
+
+            oscillator.start(audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.2); // Fade out
+            oscillator.stop(audioContext.currentTime + 0.2);
+        } catch (e) {
+            console.error("Error playing ding sound:", e);
+        }
+    }
+    // --- End Audio Context and Sound Generation ---
+
+
+    function toggleSession() {
+      const modal = document.getElementById("sessionModal");
+      modal.classList.toggle("hidden"); // Use Tailwind's hidden class
+    }
+
+    function saveSessionSettings() {
+      autoReceive = document.getElementById("autoReceiveToggle").checked;
+      showMessageModal(getTranslation("Session settings saved."));
+      toggleSession();
+    }
+
+    function handleBusyModeToggle() {
+      const busyToggle = document.getElementById("busyModeToggle");
+      if (busyToggle && busyToggle.checked) {
+        isBusy = true;
+        const duration = prompt(getTranslation("Busy Mode enabled. Enter duration in minutes (e.g., 5 or 10):", 'general'), "5");
+        const minutes = parseInt(duration, 10);
+        if (!isNaN(minutes) && minutes > 0) {
+          if (busyTimeout) clearTimeout(busyTimeout);
+          busyTimeout = setTimeout(() => {
+            isBusy = false;
+            busyToggle.checked = false;
+            showMessageModal(getTranslation("Busy Mode has been turned off automatically."));
+          }, minutes * 60 * 1000);
+        } else {
+          showMessageModal(getTranslation("Invalid input. Busy Mode not activated."));
+          busyToggle.checked = false;
+          isBusy = false;
+        }
+      } else {
+        isBusy = false;
+        if (busyTimeout) clearTimeout(busyTimeout);
+      }
+    }
+
+    // getEnabledPlatforms is now simplified as new orders are strictly WhatsApp/QR Code
+    function getEnabledPlatforms() {
+      // This function determines which platforms new orders can come from.
+      // As per the requirement, new orders will ONLY come from WhatsApp and QR Code.
+      return ["WhatsApp", "QR Code"];
+    }
+
+    function addStockControls() {
+      const panels = [
+        document.getElementById("stockPanel"),
+        document.getElementById("stockPanelInProgress"),
+        document.getElementById("stockPanelAwaitingPickup")
+      ];
+
+      panels.forEach(currentPanel => {
+          if (!currentPanel) return;
+
+          currentPanel.innerHTML = "";
+          stockItems.forEach(item => {
+              // Ensure stockQuantities is initialized for this item
+              if (typeof stockQuantities[item.name] === 'undefined') {
+                  stockQuantities[item.name] = 10; // Default quantity
+              }
+              const toggleId = `toggle-${item.name}`;
+              const qtyId = `qty-${item.name}`;
+              const row = document.createElement("div");
+              row.className = "flex justify-between items-center mb-4"; // Tailwind classes
+
+              row.innerHTML = `
+                  <span class="flex-1 text-gray-700">${getTranslation(item.name, 'item')}</span>
+                  <input id="${qtyId}" type="number" value="${stockQuantities[item.name]}" min="0" onchange="updateStock('${item.name}')" class="w-20 p-2 border border-gray-300 rounded-md text-center mr-4">
+                  <label class="switch"><input type="checkbox" id="${toggleId}" ${stockQuantities[item.name] > 0 ? 'checked' : ''}><span class="slider"></span></label>
+              `;
+              currentPanel.appendChild(row);
+          });
+      });
+    }
+
+    function updateStock(itemName) {
+      const qtyInput = document.getElementById(`qty-${itemName}`);
+      const qty = parseInt(qtyInput.value, 10);
+      stockQuantities[itemName] = qty;
+      const toggle = document.getElementById(`toggle-${itemName}`);
+      if (qty <= 0) {
+        toggle.checked = false;
+        showMessageModal(getTranslation(itemName, 'item') + getTranslation(" is out of stock!", 'general'));
+      } else {
+        toggle.checked = true;
+      }
+    }
+
+    function addOrder() {
+      if (isBusy) return;
+      const enabledPlatforms = getEnabledPlatforms(); // This will now only return WhatsApp and QR Code
+      if (enabledPlatforms.length === 0) return;
+
+      const id = nextId++;
+      // Source will always be WhatsApp or QR Code due to getEnabledPlatforms()
+      const source = enabledPlatforms[Math.floor(Math.random() * enabledPlatforms.length)];
+      const branch = branches[Math.floor(Math.random() * branches.length)];
+      
+      const { items: itemsList, totalOrderCost } = generateOrderItems();
+      orderItemsMap[id] = {
+          id: id,
+          source: source,
+          status: "Pickup",
+          branch: branch, // Ensure branch is stored
+          items: itemsList,
+          time: new Date().toLocaleTimeString(),
+          totalCost: totalOrderCost
+      };
+
+      const row = document.createElement("tr");
+      row.id = `order-${id}`;
+      row.classList.add('clickable-row', 'hover:bg-gray-100', 'transition-colors', 'duration-200');
+      row.onclick = () => displayOrderDetails(id, orderItemsMap[id]);
+
+      renderOrderRow(row, orderItemsMap[id]);
+      
+      document.getElementById("ordersTable").appendChild(row);
+      playNewOrderSound(); // Call the new sound function
+
+      if (autoReceive) {
+        setTimeout(() => {
+          const btn = document.querySelector(`#order-${id} .btn-success`); // Target the acknowledge button
+          // Check against the translated 'Acknowledge' text
+          if (btn && btn.textContent === getTranslation("Acknowledge", 'status')) {
+            btn.click();
+          }
+        }, 1000);
+      }
+    }
+
+    function generateOrderItems() {
+      const itemNotesOptions = [
+        "No onions", "Extra cheese", "Side of ketchup", "Well done", "Light sauce", "No pickles", "Add chili flakes", "Gluten-free bun", "Extra crispy fries"
+      ];
+      const itemCount = Math.floor(Math.random() * 3) + 1;
+      let items = [];
+      let totalOrderCost = 0;
+
+      for (let i = 0; i < itemCount; i++) {
+        const randomItem = stockItems[Math.floor(Math.random() * stockItems.length)];
+        const name = randomItem.name;
+        const price = randomItem.price;
+        const quantity = Math.floor(Math.random() * 3) + 1;
+        const notes = Math.random() < 0.3 ? itemNotesOptions[Math.floor(Math.random() * itemNotesOptions.length)] : '';
+        
+        const itemSubtotal = quantity * price;
+        totalOrderCost += itemSubtotal;
+
+        items.push({ name, quantity, notes, price, subtotal: itemSubtotal });
+      }
+      return { items, totalOrderCost };
+    }
+
+    function renderOrderRow(rowElement, orderData) {
+        let itemsMarkup = "<ul>";
+        if (orderData.items && Array.isArray(orderData.items)) {
+            orderData.items.forEach(item => {
+                itemsMarkup += `<li class="py-0.5">${getTranslation(item.name, 'item')} x ${item.quantity}`;
+                if (item.notes) {
+                    itemsMarkup += `<span class="item-notes"> (${getTranslation(item.notes, 'note')})</span>`;
+                }
+                itemsMarkup += `</li>`;
+            });
+        }
+        itemsMarkup += "</ul>";
+
+        const translatedStatus = getTranslation(orderData.status, 'status');
+        let translatedButtonText = '';
+        if (orderData.status === "Pickup") translatedButtonText = getTranslation("Acknowledge", 'status');
+        else if (orderData.status === "In Progress") translatedButtonText = getTranslation("Food Ready", 'status');
+        else if (orderData.status === "Awaiting Pickup") translatedButtonText = getTranslation("Dispatch", 'status');
+        else if (orderData.status === "Completed") translatedButtonText = getTranslation("Complete", 'status');
+
+        rowElement.innerHTML = `
+            <td class="table-row-cell py-3 px-6">${orderData.id}</td>
+            <td class="table-row-cell py-3 px-6"><span class="label ${orderData.source.toLowerCase().replace(" ", "")} px-2 py-1 rounded-md text-white">${getTranslation(orderData.source, 'platform')}</span></td>
+            <td id="status-${orderData.id}" class="table-row-cell py-3 px-6 status-${orderData.status.toLowerCase().replace(" ", "-")} font-medium rounded-md text-center">${translatedStatus}</td>
+            <td class="table-row-cell py-3 px-6">${itemsMarkup}</td>
+            <td class="table-row-cell py-3 px-6"><span class="order-cost-label bg-green-500 text-white px-2 py-1 rounded-md">${orderData.totalCost.toFixed(2)}${getCurrencySymbol()}</span></td>
+            <td class="table-row-cell py-3 px-6 flex items-center justify-start gap-2">
+                ${orderData.status !== "Completed" && orderData.status !== "Rejected" ? // Only show buttons if not completed or rejected
+                    `<button class="btn btn-success" onclick="event.stopPropagation(); advanceOrder(${orderData.id}, '${orderData.source}', '${orderData.branch}', this)">${translatedButtonText}</button>
+                    <button class="btn btn-danger" onclick="event.stopPropagation(); showRejectConfirmation(${orderData.id})">${getTranslation("Reject", 'status')}</button>` :
+                    ''
+                }
+            </td>
+        `;
+
+        // Adjust text alignment for rendered cells based on current language
+        const isArabic = document.body.dir === 'rtl';
+        rowElement.querySelectorAll('td, th').forEach(cell => {
+            cell.style.textAlign = isArabic ? 'right' : 'left';
+        });
+    }
+
+    function advanceOrder(id, source, branch, buttonElement) {
+      const statusElement = document.getElementById(`status-${id}`);
+      const currentRow = document.getElementById(`order-${id}`);
+      const orderDetails = orderItemsMap[id]; // Get the actual object reference
+
+      statusElement.classList.remove('status-pickup', 'status-in-progress', 'status-awaiting-pickup', 'status-completed');
+
+      currentRow.onclick = null; // Temporarily remove onclick to prevent issues during DOM manipulation
+
+      if (orderDetails.status === "Pickup") {
+        orderDetails.status = "In Progress";
+        buttonElement.textContent = getTranslation("Food Ready", 'status');
+        currentRow.remove();
+        document.getElementById("inProgressTable").appendChild(currentRow);
+        showInProgressOrdersPage(); // Re-render the in-progress table
+
+        if (autoReceive) {
+            setTimeout(() => {
+                const btn = document.querySelector(`#order-${id} .btn-success`); // Target the acknowledge button
+                // Check against the translated 'Food Ready' text
+                if (btn && btn.textContent === getTranslation("Food Ready", 'status')) {
+                    btn.click();
+                }
+            }, 7000);
+        }
+      } else if (orderDetails.status === "In Progress") {
+        orderDetails.status = "Awaiting Pickup";
+        buttonElement.textContent = getTranslation("Dispatch", 'status');
+        currentRow.remove();
+        document.getElementById("awaitingPickupTable").appendChild(currentRow);
+        showAwaitingPickupOrdersPage(); // Re-render the awaiting pickup table
+      } else if (orderDetails.status === "Awaiting Pickup") {
+        orderDetails.status = "Completed";
+        buttonElement.textContent = getTranslation("Complete", 'status');
+        
+        const items = orderDetails.items;
+        items.forEach(item => {
+          const itemName = item.name;
+          const orderedQty = item.quantity;
+          let newQty = stockQuantities[itemName] - orderedQty;
+          if (newQty < 0) newQty = 0;
+          stockQuantities[itemName] = newQty;
+          document.getElementById(`qty-${itemName}`).value = newQty;
+          document.getElementById(`toggle-${itemName}`).checked = newQty > 0;
+        });
+        
+        // Ensure the full orderDetails object (including branch) is pushed to completedOrders
+        completedOrders.push({ ...orderDetails, branch: branch }); 
+        delete orderItemsMap[id]; // Delete from active orders map AFTER pushing to completed
+        
+        currentRow.remove(); // Remove the row from the DOM
+        updateCompletedOrdersTable(); // Refresh the completed orders table
+        showCompletedOrdersPage(); // Navigate to completed page if needed
+      }
+      
+      // For active orders, re-attach onclick and re-render if the row is still in the DOM
+      if (orderItemsMap[id]) { // Check if the order is still in the active map
+          renderOrderRow(currentRow, orderItemsMap[id]); // Re-render with updated status
+          currentRow.onclick = () => displayOrderDetails(id, orderItemsMap[id]); // Re-attach onclick
+      }
+    }
+
+    // New: Function to show rejection confirmation
+    function showRejectConfirmation(id) {
+        showConfirmationModal(getTranslation("Are you sure you want to reject order", 'general') + ` ${id}?`, (confirmed) => {
+            if (confirmed) {
+                rejectOrder(id);
+            }
+        });
+    }
+
+    // New: Function to reject an order
+    function rejectOrder(id) {
+        const orderDetails = orderItemsMap[id];
+        if (orderDetails) {
+            orderDetails.status = "Rejected"; // Set status to rejected
+            rejectedOrders.push({ ...orderDetails }); // Add to rejected orders array
+            delete orderItemsMap[id]; // Remove from active orders map
+
+            const row = document.getElementById(`order-${id}`);
+            if (row) {
+                row.remove(); // Remove from current view
+            }
+            playDingSound(); // Play a sound for rejection
+            showMessageModal(getTranslation("Order", 'general') + ` ${id} ` + getTranslation("has been rejected.", 'general'));
+            
+            // Automatically switch to the rejected orders page after rejection
+            showRejectedOrdersPage(); // <--- ADDED THIS LINE
+        }
+    }
+
+
+    function updateCompletedOrdersTable() {
+        const tbody = document.getElementById("completedTable");
+        tbody.innerHTML = "";
+        completedOrders.forEach(o => {
+            const row = document.createElement("tr");
+            row.id = `order-${o.id}`;
+            row.classList.add('clickable-row', 'hover:bg-gray-100', 'transition-colors', 'duration-200');
+            row.onclick = () => displayOrderDetails(o.id, o);
+            row.innerHTML = `
+                <td class="table-row-cell py-3 px-6">${o.id}</td>
+                <td class="table-row-cell py-3 px-6">${getTranslation(o.source, 'platform')}</td>
+                <td class="table-row-cell py-3 px-6">${getTranslation(o.status, 'status')}</td>
+                <td class="table-row-cell py-3 px-6">${o.time}</td>
+                <td class="table-row-cell py-3 px-6"><span class="order-cost-label bg-green-500 text-white px-2 py-1 rounded-md">${o.totalCost.toFixed(2)}${getCurrencySymbol()}</span></td>
+            `;
+            // Adjust text alignment for rendered cells based on current language
+            const isArabic = document.body.dir === 'rtl';
+            row.querySelectorAll('td, th').forEach(cell => {
+                cell.style.textAlign = isArabic ? 'right' : 'left';
+            });
+            tbody.appendChild(row);
+        });
+    }
+
+    // New function to update the rejected orders table
+    function updateRejectedOrdersTable() {
+        const tbody = document.getElementById("rejectedTable");
+        tbody.innerHTML = "";
+        rejectedOrders.forEach(o => {
+            const row = document.createElement("tr");
+            row.id = `order-${o.id}`;
+            row.classList.add('clickable-row', 'hover:bg-gray-100', 'transition-colors', 'duration-200');
+            row.onclick = () => displayOrderDetails(o.id, o);
+            row.innerHTML = `
+                <td class="table-row-cell py-3 px-6">${o.id}</td>
+                <td class="table-row-cell py-3 px-6">${getTranslation(o.source, 'platform')}</td>
+                <td class="table-row-cell py-3 px-6"><span class="status-rejected font-medium rounded-md text-center px-2 py-1">${getTranslation(o.status, 'status')}</span></td>
+                <td class="table-row-cell py-3 px-6">${o.time}</td>
+                <td class="table-row-cell py-3 px-6"><span class="order-cost-label bg-red-500 text-white px-2 py-1 rounded-md">${o.totalCost.toFixed(2)}${getCurrencySymbol()}</span></td>
+            `;
+            // Adjust text alignment for rendered cells based on current language
+            const isArabic = document.body.dir === 'rtl';
+            row.querySelectorAll('td, th').forEach(cell => {
+                cell.style.textAlign = isArabic ? 'right' : 'left';
+            });
+            tbody.appendChild(row);
+        });
+    }
+
+
+    function hideAllPages() {
+      const livePage = document.getElementById("livePage");
+      if (livePage) livePage.classList.add("hidden");
+      const inProgressPage = document.getElementById("inProgressPage");
+      if (inProgressPage) inProgressPage.classList.add("hidden");
+      const awaitingPickupPage = document.getElementById("awaitingPickupPage");
+      if (awaitingPickupPage) awaitingPickupPage.classList.add("hidden");
+      const completedOrdersPage = document.getElementById("completedOrdersPage");
+      if (completedOrdersPage) completedOrdersPage.classList.add("hidden");
+      const rejectedOrdersPage = document.getElementById("rejectedOrdersPage"); // New
+      if (rejectedOrdersPage) rejectedOrdersPage.classList.add("hidden"); // New
+    }
+
+    function showLiveOrdersPage() {
+      hideAllPages();
+      const livePage = document.getElementById("livePage");
+      if (livePage) livePage.classList.remove("hidden");
+      addStockControls();
+      const ordersTable = document.getElementById("ordersTable");
+      if (ordersTable) refreshOrdersTable(ordersTable, Object.values(orderItemsMap).filter(o => o.status === "Pickup"));
+    }
+
+    function showInProgressOrdersPage() {
+      hideAllPages();
+      const inProgressPage = document.getElementById("inProgressPage");
+      if (inProgressPage) inProgressPage.classList.remove("hidden");
+      addStockControls();
+      const inProgressTable = document.getElementById("inProgressTable");
+      if (inProgressTable) refreshOrdersTable(inProgressTable, Object.values(orderItemsMap).filter(o => o.status === "In Progress"));
+    }
+
+    function showAwaitingPickupOrdersPage() {
+      hideAllPages();
+      const awaitingPickupPage = document.getElementById("awaitingPickupPage");
+      if (awaitingPickupPage) awaitingPickupPage.classList.remove("hidden");
+      addStockControls();
+      const awaitingPickupTable = document.getElementById("awaitingPickupTable");
+      if (awaitingPickupTable) refreshOrdersTable(awaitingPickupTable, Object.values(orderItemsMap).filter(o => o.status === "Awaiting Pickup"));
+    }
+
+    function showCompletedOrdersPage() {
+      hideAllPages();
+      const completedOrdersPage = document.getElementById("completedOrdersPage");
+      if (completedOrdersPage) completedOrdersPage.classList.remove("hidden");
+      updateCompletedOrdersTable();
+    }
+
+    // New function to show rejected orders page
+    function showRejectedOrdersPage() {
+        hideAllPages();
+        const rejectedOrdersPage = document.getElementById("rejectedOrdersPage");
+        if (rejectedOrdersPage) rejectedOrdersPage.classList.remove("hidden");
+        updateRejectedOrdersTable();
+    }
+
+    function refreshOrdersTable(tbodyElement, ordersArray) {
+        tbodyElement.innerHTML = '';
+        ordersArray.forEach(orderData => {
+            const row = document.createElement("tr");
+            row.id = `order-${orderData.id}`;
+            row.classList.add('clickable-row', 'hover:bg-gray-100', 'transition-colors', 'duration-200');
+            row.onclick = () => displayOrderDetails(orderData.id, orderData);
+            renderOrderRow(row, orderData);
+            tbodyElement.appendChild(row);
+        });
+    }
+
+    function displayOrderDetails(orderId, orderData) {
+        const modal = document.getElementById("orderDetailsModal");
+        const orderIdSpan = document.getElementById("modalOrderId");
+        const orderSourceSpan = document.getElementById("modalOrderSource");
+        const orderStatusSpan = document.getElementById("modalOrderStatus");
+        const orderBranchSpan = document.getElementById("modalOrderBranch");
+        const orderTimeSpan = document.getElementById("modalOrderTime");
+        const orderItemsList = document.getElementById("modalOrderItems");
+        const modalOrderTotalCostSpan = document.getElementById("modalOrderTotalCost");
+
+        orderItemsList.innerHTML = '';
+
+        if (orderIdSpan) orderIdSpan.textContent = orderData.id;
+        if (orderSourceSpan) orderSourceSpan.textContent = getTranslation(orderData.source, 'platform');
+        if (orderStatusSpan) orderStatusSpan.textContent = getTranslation(orderData.status, 'status');
+        if (orderBranchSpan) orderBranchSpan.textContent = getTranslation(orderData.branch, 'branch') || 'N/A';
+        if (orderTimeSpan) orderTimeSpan.textContent = orderData.time || 'N/A';
+        if (modalOrderTotalCostSpan) modalOrderTotalCostSpan.textContent = orderData.totalCost.toFixed(2) + getCurrencySymbol();
+
+        orderData.items.forEach(item => {
+            const listItem = document.createElement('li');
+            listItem.className = "py-0.5"; // Tailwind padding
+            listItem.textContent = `${getTranslation(item.name, 'item')} x ${item.quantity}`;
+            if (item.notes) {
+                const notesSpan = document.createElement('span');
+                notesSpan.classList.add('item-notes');
+                notesSpan.textContent = ` (${getTranslation(item.notes, 'note')})`;
+                listItem.appendChild(notesSpan);
+            }
+            orderItemsList.appendChild(listItem);
+        });
+
+        if (modal) modal.classList.remove("hidden"); // Show modal
+    }
+
+    function closeOrderDetailsModal() {
+        const modal = document.getElementById("orderDetailsModal");
+        if (modal) modal.classList.add("hidden"); // Hide modal
+    }
+
+    window.onclick = function(event) {
+        const orderDetailsModal = document.getElementById("orderDetailsModal");
+        const sessionModal = document.getElementById("sessionModal");
+        const confirmationModal = document.getElementById("confirmationModal");
+        const messageModal = document.getElementById("messageModal");
+
+        if (orderDetailsModal && event.target == orderDetailsModal) {
+            orderDetailsModal.classList.add("hidden");
+        }
+        if (sessionModal && event.target == sessionModal) {
+            sessionModal.classList.add("hidden");
+        }
+        if (confirmationModal && event.target == confirmationModal) {
+            closeConfirmationModal(); // Use the dedicated close function
+        }
+        if (messageModal && event.target == messageModal) {
+            messageModal.classList.add("hidden");
+        }
+    }
+
+    window.onload = () => {
+      initAudio(); // Initialize AudioContext and setup resume listener
+
+      // Assign onclick handlers to buttons
+      const btnInProgress = document.getElementById("btn-in-progress");
+      if (btnInProgress) btnInProgress.onclick = showInProgressOrdersPage;
+      
+      const btnAwaitingPickup = document.getElementById("btn-awaiting-pickup");
+      if (btnAwaitingPickup) btnAwaitingPickup.onclick = showAwaitingPickupOrdersPage;
+      
+      const btnCompletedOrders = document.getElementById("btn-completed-orders");
+      if (btnCompletedOrders) btnCompletedOrders.onclick = showCompletedOrdersPage;
+
+      const btnRejectedOrders = document.getElementById("btn-rejected-orders"); // New
+      if (btnRejectedOrders) btnRejectedOrders.onclick = showRejectedOrdersPage; // New
+
+      addStockControls();
+      showLiveOrdersPage();
+      setInterval(addOrder, 10000);
+      updateLang(); // Initial translation on load
+
+      // Initialize delivery app toggles (disabled as per requirement)
+      const whatsAppToggle = document.getElementById('whatsAppToggle');
+      if (whatsAppToggle) whatsAppToggle.checked = true;
+      const qrCodeToggle = document.getElementById('qrCodeToggle');
+      if (qrCodeToggle) qrCodeToggle.checked = true;
+      const hungerStationToggle = document.getElementById('hungerStationToggle');
+      if (hungerStationToggle) hungerStationToggle.checked = false;
+      const jahezToggle = document.getElementById('jahezToggle');
+      if (jahezToggle) jahezToggle.checked = false;
+      const toYouToggle = document.getElementById('toYouToggle');
+      if (toYouToggle) toYouToggle.checked = false;
+      const noonToggle = document.getElementById('noonToggle');
+      if (noonToggle) noonToggle.checked = false;
+    };
+
+    function toggleLang() {
+      currentLang = currentLang === 'en' ? 'ar' : 'en';
+      document.body.dir = currentLang === 'ar' ? 'rtl' : 'ltr';
+      updateLang(); // Re-render all UI elements
+    }
+
+    function updateLang() {
+      // Store the ID of the currently visible page
+      let activePageId = '';
+      const livePage = document.getElementById("livePage");
+      const inProgressPage = document.getElementById("inProgressPage");
+      const awaitingPickupPage = document.getElementById("awaitingPickupPage");
+      const completedOrdersPage = document.getElementById("completedOrdersPage");
+      const rejectedOrdersPage = document.getElementById("rejectedOrdersPage"); // New
+
+      if (livePage && !livePage.classList.contains("hidden")) {
+          activePageId = 'livePage';
+      } else if (inProgressPage && !inProgressPage.classList.contains("hidden")) {
+          activePageId = 'inProgressPage';
+      } else if (awaitingPickupPage && !awaitingPickupPage.classList.contains("hidden")) {
+          activePageId = 'awaitingPickupPage';
+      } else if (completedOrdersPage && !completedOrdersPage.classList.contains("hidden")) {
+          activePageId = 'completedOrdersPage';
+      } else if (rejectedOrdersPage && !rejectedOrdersPage.classList.contains("hidden")) { // New
+          activePageId = 'rejectedOrdersPage'; // New
+      }
+
+      // Update static UI elements
+      const toggleLangBtn = document.getElementById("toggleLangBtn");
+      if (toggleLangBtn) toggleLangBtn.innerText = currentLang === 'ar' ? 'English' : 'العربية';
+      
+      const dashboardTitle = document.getElementById("dashboardTitle");
+      if (dashboardTitle) dashboardTitle.innerText = getTranslation("dashboardTitle");
+      
+      const btnInProgress = document.getElementById("btn-in-progress");
+      if (btnInProgress) btnInProgress.innerText = getTranslation("inProgress");
+      
+      const btnAwaitingPickup = document.getElementById("btn-awaiting-pickup");
+      if (btnAwaitingPickup) btnAwaitingPickup.innerText = getTranslation("awaitingPickup");
+      
+      const btnCompletedOrders = document.getElementById("btn-completed-orders");
+      if (btnCompletedOrders) btnCompletedOrders.innerText = getTranslation("completedOrders");
+
+      const btnRejectedOrders = document.getElementById("btn-rejected-orders"); // New
+      if (btnRejectedOrders) btnRejectedOrders.innerText = getTranslation("rejectedOrders"); // New
+      
+      const ordersHeader = document.getElementById("ordersHeader");
+      if (ordersHeader) ordersHeader.innerText = getTranslation("orders");
+      
+      const stockHeader = document.getElementById("stockHeader");
+      if (stockHeader) stockHeader.innerText = getTranslation("stockControl");
+      
+      const stockHeaderInProgress = document.getElementById("stockHeaderInProgress");
+      if (stockHeaderInProgress) stockHeaderInProgress.innerText = getTranslation("stockControl");
+      
+      const stockHeaderAwaitingPickup = document.getElementById("stockHeaderAwaitingPickup");
+      if (stockHeaderAwaitingPickup) stockHeaderAwaitingPickup.innerText = getTranslation("stockControl");
+      
+      const sessionSettingsTitle = document.getElementById("sessionSettingsTitle");
+      if (sessionSettingsTitle) sessionSettingsTitle.innerText = getTranslation("sessionSettings");
+      
+      const deliveryAppsTitle = document.getElementById("deliveryAppsTitle");
+      if (deliveryAppsTitle) deliveryAppsTitle.innerText = getTranslation("deliveryApps");
+      
+      const saveChangesBtn = document.getElementById("saveChangesBtn");
+      if (saveChangesBtn) saveChangesBtn.innerText = getTranslation("saveChanges");
+
+      // Update table headers
+      const thId = document.getElementById("th-id");
+      if (thId) thId.innerText = getTranslation("orderId");
+      
+      const thSource = document.getElementById("th-source");
+      if (thSource) thSource.innerText = getTranslation("source");
+      
+      const thStatus = document.getElementById("th-status");
+      if (thStatus) thStatus.innerText = getTranslation("status");
+      
+      const thItems = document.getElementById("th-items");
+      if (thItems) thItems.innerText = getTranslation("items");
+      
+      const thCost = document.getElementById("th-cost");
+      if (thCost) thCost.innerText = getTranslation("cost");
+      
+      const cthId = document.getElementById("cth-id");
+      if (cthId) cthId.innerText = getTranslation("orderId");
+      
+      const cthSource = document.getElementById("cth-source");
+      if (cthSource) cthSource.innerText = getTranslation("source");
+      
+      const cthStatus = document.getElementById("cth-status");
+      if (cthStatus) cthStatus.innerText = getTranslation("status");
+      
+      const cthTime = document.getElementById("cth-time");
+      if (ctthTime) cthTime.innerText = getTranslation("time");
+      
+      const cthCost = document.getElementById("cth-cost");
+      if (cthCost) cthCost.innerText = getTranslation("cost");
+
+      // New rejected orders table headers
+      const rthId = document.getElementById("rth-id");
+      if (rthId) rthId.innerText = getTranslation("orderId");
+      const rthSource = document.getElementById("rth-source");
+      if (rthSource) rthSource.innerText = getTranslation("source");
+      const rthStatus = document.getElementById("rth-status");
+      if (rthStatus) rthStatus.innerText = getTranslation("status");
+      const rthTime = document.getElementById("rth-time");
+      if (rthTime) rthTime.innerText = getTranslation("time");
+      const rthCost = document.getElementById("rth-cost");
+      if (rthCost) rthCost.innerText = getTranslation("cost");
+
+
+      const inProgressHeader = document.getElementById("inProgressHeader");
+      if (inProgressHeader) inProgressHeader.innerText = getTranslation("inProgress");
+      
+      const awaitingPickupHeader = document.getElementById("awaitingPickupHeader");
+      if (awaitingPickupHeader) awaitingPickupHeader.innerText = getTranslation("awaitingPickup");
+      
+      const liveOrdersTitleElement = document.getElementById("liveOrdersTitle");
+      if (liveOrdersTitleElement) liveOrdersTitleElement.innerText = getTranslation("liveOrders");
+
+      const backBtnInProgress = document.getElementById("backBtnInProgress");
+      if (backBtnInProgress) backBtnInProgress.innerText = getTranslation("backBtn");
+      
+      const backBtnAwaitingPickup = document.getElementById("backBtnAwaitingPickup");
+      if (backBtnAwaitingPickup) backBtnAwaitingPickup.innerText = getTranslation("backBtn");
+      
+      const backBtnCompleted = document.getElementById("backBtnCompleted");
+      if (backBtnCompleted) backBtnCompleted.innerText = getTranslation("backBtn");
+
+      const rejectedOrdersTitle = document.getElementById("rejectedOrdersTitle"); // New
+      if (rejectedOrdersTitle) rejectedOrdersTitle.innerText = getTranslation("rejectedOrders"); // New
+      const backBtnRejected = document.getElementById("backBtnRejected"); // New
+      if (backBtnRejected) backBtnRejected.innerText = getTranslation("backBtn"); // New
+
+      // Update Order Details Modal labels
+      const orderDetailsTitle = document.getElementById("orderDetailsTitle");
+      if (orderDetailsTitle) orderDetailsTitle.innerText = getTranslation("orderDetailsTitle");
+      
+      const modalOrderIdStrong = document.querySelector("#orderDetailsContent p:nth-of-type(1) strong");
+      if (modalOrderIdStrong) modalOrderIdStrong.textContent = getTranslation("modalOrderId") + ":";
+      
+      const modalOrderSourceStrong = document.querySelector("#orderDetailsContent p:nth-of-type(2) strong");
+      if (modalOrderSourceStrong) modalOrderSourceStrong.textContent = getTranslation("modalOrderSource") + ":";
+      
+      const modalOrderStatusStrong = document.querySelector("#orderDetailsContent p:nth-of-type(3) strong");
+      if (modalOrderStatusStrong) modalOrderStatusStrong.textContent = getTranslation("modalOrderStatus") + ":";
+      
+      const modalOrderBranchStrong = document.querySelector("#orderDetailsContent p:nth-of-type(4) strong");
+      if (modalOrderBranchStrong) modalOrderBranchStrong.textContent = getTranslation("modalOrderBranch") + ":";
+      
+      const modalOrderTimeStrong = document.querySelector("#orderDetailsContent p:nth-of-type(5) strong");
+      if (modalOrderTimeStrong) modalOrderTimeStrong.textContent = getTranslation("modalOrderTime") + ":";
+      
+      const orderDetailsH4 = document.querySelector("#orderDetailsContent h4");
+      if (orderDetailsH4) orderDetailsH4.textContent = getTranslation("modalItems") + ":";
+      
+      const modalTotalCostStrong = document.querySelector("#orderDetailsContent p:last-of-type strong");
+      if (modalTotalCostStrong) modalTotalCostStrong.textContent = getTranslation("totalCost") + ":";
+
+      // --- Adjust absolute positioning for RTL/LTR layout ---
+      const isArabic = currentLang === 'ar';
+
+      const logoutDiv = document.getElementById('logoutDiv');
+      if (logoutDiv) {
+          logoutDiv.style.right = isArabic ? 'auto' : '1rem';
+          logoutDiv.style.left = isArabic ? '1rem' : 'auto';
+      }
+
+      const toggleLangDiv = document.getElementById('toggleLangDiv');
+      if (toggleLangDiv) {
+          toggleLangDiv.style.left = isArabic ? 'auto' : '1.5rem';
+          toggleLangDiv.style.right = isArabic ? '1.5rem' : 'auto';
+      }
+
+      const backBtnInProgressDiv = document.getElementById('backBtnInProgressDiv');
+      if (backBtnInProgressDiv) {
+          backBtnInProgressDiv.style.left = isArabic ? 'auto' : '1.5rem';
+          backBtnInProgressDiv.style.right = isArabic ? '1.5rem' : 'auto';
+      }
+
+      const backBtnAwaitingPickupDiv = document.getElementById('backBtnAwaitingPickupDiv');
+      if (backBtnAwaitingPickupDiv) {
+          backBtnAwaitingPickupDiv.style.left = isArabic ? 'auto' : '1.5rem';
+          backBtnAwaitingPickupDiv.style.right = isArabic ? '1.5rem' : 'auto';
+      }
+
+      const backBtnCompletedDiv = document.getElementById('backBtnCompletedDiv');
+      if (backBtnCompletedDiv) {
+          backBtnCompletedDiv.style.left = isArabic ? 'auto' : '1.5rem';
+          backBtnCompletedDiv.style.right = isArabic ? '1.5rem' : 'auto';
+      }
+
+      const backBtnRejectedDiv = document.getElementById('backBtnRejectedDiv'); // New
+      if (backBtnRejectedDiv) { // New
+          backBtnRejectedDiv.style.left = isArabic ? 'auto' : '1.5rem'; // New
+          backBtnRejectedDiv.style.right = isArabic ? '1.5rem' : 'auto'; // New
+      }
+
+      // Adjust text alignment and margins for titles
+      if (liveOrdersTitleElement) { // Re-check if element exists after innerText update
+          liveOrdersTitleElement.style.marginLeft = isArabic ? 'auto' : '2rem';
+          liveOrdersTitleElement.style.marginRight = isArabic ? '2rem' : 'auto';
+          liveOrdersTitleElement.style.textAlign = isArabic ? 'right' : 'left';
+      }
+      const ordersHeaderElement = document.getElementById("ordersHeader");
+      if (ordersHeaderElement) ordersHeaderElement.style.textAlign = isArabic ? 'right' : 'left';
+      
+      const stockHeaderElement = document.getElementById("stockHeader");
+      if (stockHeaderElement) stockHeaderElement.style.textAlign = isArabic ? 'right' : 'left';
+      
+      const stockHeaderInProgressElement = document.getElementById("stockHeaderInProgress");
+      if (stockHeaderInProgressElement) stockHeaderInProgressElement.style.textAlign = isArabic ? 'right' : 'left';
+      
+      const stockHeaderAwaitingPickupElement = document.getElementById("stockHeaderAwaitingPickup");
+      if (stockHeaderAwaitingPickupElement) stockHeaderAwaitingPickupElement.style.textAlign = isArabic ? 'right' : 'left';
+      
+      const sessionSettingsTitleElement = document.getElementById("sessionSettingsTitle");
+      if (sessionSettingsTitleElement) sessionSettingsTitleElement.style.textAlign = isArabic ? 'right' : 'left';
+      
+      const deliveryAppsTitleElement = document.getElementById("deliveryAppsTitle");
+      if (deliveryAppsTitleElement) deliveryAppsTitleElement.style.textAlign = isArabic ? 'right' : 'left';
+      
+      const saveSettingsDiv = document.getElementById('saveSettingsDiv');
+      if (saveSettingsDiv) {
+          saveSettingsDiv.style.textAlign = isArabic ? 'left' : 'right';
+      }
+
+      // Adjust table header text alignment
+      const tableHeaders = document.querySelectorAll('th');
+      tableHeaders.forEach(th => {
+          th.style.textAlign = isArabic ? 'right' : 'left';
+      });
+
+      // Re-render all dynamic content to apply new language
+      addStockControls(); // Re-render stock controls for all panels
+
+      // Re-render tables based on their current data
+      const ordersTable = document.getElementById("ordersTable");
+      if (ordersTable) refreshOrdersTable(ordersTable, Object.values(orderItemsMap).filter(o => o.status === "Pickup"));
+      const inProgressTable = document.getElementById("inProgressTable");
+      if (inProgressTable) refreshOrdersTable(inProgressTable, Object.values(orderItemsMap).filter(o => o.status === "In Progress"));
+      const awaitingPickupTable = document.getElementById("awaitingPickupTable");
+      if (awaitingPickupTable) refreshOrdersTable(awaitingPickupTable, Object.values(orderItemsMap).filter(o => o.status === "Awaiting Pickup"));
+      updateCompletedOrdersTable(); // This function already handles re-rendering completed orders
+      updateRejectedOrdersTable(); // New: Update rejected orders table
+
+      // Show the previously active page
+      if (activePageId) {
+          hideAllPages(); // Ensure all are hidden first
+          const activePageElement = document.getElementById(activePageId);
+          if (activePageElement) activePageElement.classList.remove("hidden");
+      }
+    }
+  </script>
+
+<div id="rejectionReasonModal" class="modal-overlay hidden fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+  <div class="modal-content bg-white p-6 rounded-lg shadow-2xl w-11/12 max-w-sm relative">
+    <h3 class="text-xl font-semibold text-gray-800 mb-4">Select Rejection Reason</h3>
+    <label for="rejectionReason" class="block text-gray-700 mb-2">Reason:</label>
+    <select id="rejectionReason" class="w-full border border-gray-300 p-2 rounded mb-4">
+      <option value="Not available">Not available</option>
+      <option value="Item out of stock">Item out of stock</option>
+      <option value="Busy / Cannot handle now">Busy / Cannot handle now</option>
+      <option value="Wrong order">Wrong order</option>
+    </select>
+    <div class="flex justify-end gap-3">
+      <button id="reasonConfirmBtn" class="btn btn-danger">Confirm</button>
+      <button id="reasonCancelBtn" class="btn btn-secondary">Cancel</button>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
+
+<script>
+let rejectionIdTemp = null;
+
+function showRejectConfirmation(id) {
+    rejectionIdTemp = id;
+    document.getElementById("rejectionReasonModal").classList.remove("hidden");
+
+    document.getElementById("reasonConfirmBtn").onclick = () => {
+        const reason = document.getElementById("rejectionReason").value;
+        document.getElementById("rejectionReasonModal").classList.add("hidden");
+        rejectOrder(id, reason);
+    };
+
+    document.getElementById("reasonCancelBtn").onclick = () => {
+        rejectionIdTemp = null;
+        document.getElementById("rejectionReasonModal").classList.add("hidden");
+    };
+}
+
+function rejectOrder(id, reason) {
+    const orderDetails = orderItemsMap[id];
+    if (orderDetails) {
+        orderDetails.status = "Rejected";
+        orderDetails.rejectionReason = reason;
+        rejectedOrders.push({ ...orderDetails });
+        delete orderItemsMap[id];
+        const row = document.getElementById(`order-${id}`);
+        if (row) row.remove();
+        playDingSound();
+        showMessageModal("Order " + id + " has been rejected.");
+        showRejectedOrdersPage();
+    }
+}
+</script>

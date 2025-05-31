@@ -1,0 +1,3495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <title>Restaurant Admin Dashboard</title>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* Custom styles for the scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #e0e7ff; /* Lighter track for a softer look */
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #93c5fd; /* Soft blue thumb */
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #60a5fa; /* Slightly darker blue on hover */
+        }
+
+        /* General body font and background */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc; /* Very light blue-gray background */
+            color: #334155; /* Darker text for readability */
+        }
+
+        /* Sidebar specific styles */
+        aside {
+            background-color: #1a202c; /* Darker, almost black blue */
+            color: #e2e8f0; /* Light text for contrast */
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); /* More pronounced shadow */
+        }
+
+        aside ul li {
+            transition: background-color 0.3s ease, color 0.3s ease;
+            border-radius: 0.75rem; /* Rounded corners for menu items */
+        }
+
+        aside ul li:hover {
+            background-color: #2d3748; /* Slightly lighter dark blue on hover */
+            color: #a0aec0; /* Lighter text on hover */
+        }
+
+        aside ul li.active-menu-item {
+            background-color: #4299e1; /* Vibrant blue for active item */
+            color: white;
+            font-weight: 600;
+            box-shadow: 0 2px 10px rgba(66, 153, 225, 0.4); /* Shadow for active item */
+        }
+
+        /* Main content area */
+        main {
+            background-color: #f8fafc; /* Consistent with body background */
+        }
+
+        /* Section display control */
+        section {
+            display: none;
+        }
+
+        section.active {
+            display: block;
+        }
+
+        /* KPI boxes - using flex for alignment */
+        .kpi-box {
+            background: white;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08); /* Softer, larger shadow */
+            border-radius: 1rem; /* More rounded */
+            display: flex;
+            align-items: center;
+            padding: 1.5rem; /* Increased padding */
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .kpi-box:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15); /* Lift effect on hover */
+        }
+
+        .kpi-box i {
+            font-size: 2.25rem; /* Larger icons */
+            margin-right: 1rem;
+            color: #4299e1; /* Consistent blue for icons */
+        }
+
+        /* Table styling */
+        table {
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+            border-radius: 1rem;
+            overflow: hidden;
+            background-color: white; /* Ensure white background for tables */
+        }
+
+        th, td {
+            border-bottom: 1px solid #e2e8f0;
+            padding: 1rem 1.25rem; /* Increased padding */
+            text-align: left; /* Ensure text is left-aligned */
+        }
+
+        thead th {
+            background-color: #ebf4ff; /* Light blue header background */
+            color: #2d3748; /* Darker text for headers */
+            font-weight: 600;
+        }
+
+        tbody tr:nth-child(even) {
+            background-color: #f8fafc; /* Zebra striping for readability */
+        }
+
+        tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* Form elements */
+        input[type="text"],
+        input[type="number"],
+        input[type="date"],
+        input[type="password"],
+        select,
+        textarea {
+            border: 1px solid #cbd5e0;
+            border-radius: 0.5rem; /* Consistent rounded corners */
+            padding: 0.75rem; /* Increased padding */
+            width: 100%;
+            box-sizing: border-box;
+            margin-bottom: 1rem; /* Consistent margin */
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        input[type="text"]:focus,
+        input[type="number"]:focus,
+        input[type="date"]:focus,
+        input[type="password"]:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #4299e1; /* Blue border on focus */
+            box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.3); /* Blue ring on focus */
+        }
+
+        /* Button styles */
+        button {
+            border-radius: 0.75rem; /* More rounded buttons */
+            padding: 0.75rem 1.5rem; /* Increased padding */
+            font-weight: 600;
+            transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1); /* Subtle shadow */
+        }
+
+        button:hover {
+            transform: translateY(-2px); /* Slightly more pronounced lift */
+            box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+        }
+
+        /* Specific button colors */
+        .btn-primary {
+            background-color: #4299e1; /* Tailwind blue-500 */
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #3182ce; /* Tailwind blue-600 */
+        }
+
+        .btn-success {
+            background-color: #48bb78; /* Tailwind green-500 */
+            color: white;
+        }
+
+        .btn-success:hover {
+            background-color: #38a169; /* Tailwind green-600 */
+        }
+
+        .btn-danger {
+            background-color: #ef4444; /* Tailwind red-500 */
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background-color: #dc2626; /* Tailwind red-600 */
+        }
+
+        .btn-secondary {
+            background-color: #a0aec0; /* Tailwind gray-400 */
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background-color: #718096; /* Tailwind gray-500 */
+        }
+
+        /* Modal overlay */
+        .modal-overlay {
+            background-color: rgba(0, 0, 0, 0.6); /* Darker overlay */
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.3s ease-out; /* Fade in animation */
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 1.25rem; /* More rounded modal */
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3); /* Stronger shadow */
+            position: relative;
+            animation: slideIn 0.3s ease-out; /* Slide in animation */
+        }
+
+        .close-button {
+            position: absolute;
+            top: 1rem;
+            right: 1.25rem;
+            font-size: 2.25rem; /* Larger close button */
+            cursor: pointer;
+            color: #666;
+            transition: color 0.2s ease;
+        }
+
+        .close-button:hover {
+            color: #333;
+            transform: rotate(90deg); /* Rotate effect on hover */
+        }
+
+        /* Animations for modal */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideIn {
+            from { transform: translateY(-30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        /* Menu item card */
+        .menu-item-card {
+            background: white;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            border-radius: 1rem;
+            overflow: hidden;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .menu-item-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+        }
+
+        .menu-item-card img {
+            width: 100%;
+            height: 180px; /* Slightly taller images */
+            object-fit: cover;
+            border-bottom: 1px solid #eee;
+        }
+        .menu-category-title {
+            font-size: 2rem; /* Larger title */
+            font-weight: 700; /* Bolder */
+            color: #2d3748; /* Darker text */
+            margin-bottom: 1.5rem;
+            border-bottom: 2px solid #a0aec0; /* More prominent border */
+            padding-bottom: 0.75rem;
+            margin-top: 2rem;
+        }
+
+        /* Category card for menu */
+        .category-card {
+            background: white;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .category-card:hover {
+            transform: translateY(-8px); /* More pronounced lift */
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        }
+        .category-card img {
+            width: 90px; /* Slightly larger image */
+            height: 90px;
+            object-fit: cover;
+            border-radius: 50%;
+            margin: 0 auto 1rem auto;
+            border: 3px solid #4299e1; /* Thicker, blue border */
+        }
+
+        /* Custom scrollbar for customer table */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #e0e7ff;
+            border-radius: 10px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #93c5fd;
+            border-radius: 10px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #60a5fa;
+        }
+
+        /* Tab styles for WhatsApp section */
+        .tab-button {
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.75rem 0.75rem 0 0; /* Rounded top corners */
+            background-color: #e2e8f0;
+            color: #4a5568;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s ease, color 0.3s ease;
+            box-shadow: 0 -2px 8px rgba(0,0,0,0.05); /* Subtle shadow on tabs */
+        }
+
+        .tab-button.active-tab {
+            background-color: #4299e1;
+            color: white;
+            box-shadow: 0 -4px 12px rgba(66, 153, 225, 0.3); /* More prominent shadow for active tab */
+        }
+
+        .tab-content {
+            display: none;
+            padding-top: 1.5rem; /* More padding */
+            background-color: white;
+            border-radius: 0 0 1rem 1rem; /* Rounded bottom corners */
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        .tab-content.active-tab-content {
+            display: block;
+        }
+
+        /* Loading spinner */
+        .spinner {
+            border: 4px solid rgba(66, 153, 225, 0.2); /* Lighter blue border */
+            border-left-color: #4299e1; /* Vibrant blue spinner */
+            border-radius: 50%;
+            width: 28px; /* Slightly larger spinner */
+            height: 28px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            vertical-align: middle;
+            margin-right: 0.75rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            aside {
+                width: 100%;
+                height: auto;
+                padding: 1rem;
+                position: relative;
+                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            }
+            main {
+                padding: 1rem;
+            }
+            body {
+                flex-direction: column;
+            }
+            .kpi-box {
+                width: 100%;
+                margin-right: 0;
+                margin-bottom: 1rem; /* Add margin for stacking */
+            }
+            .tab-button {
+                padding: 0.5rem 1rem;
+                font-size: 0.875rem;
+            }
+            .modal-content {
+                width: 95%;
+                padding: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body class="flex flex-col md:flex-row min-h-screen">
+    <div class="absolute top-4 right-4 z-10" id="logoutDiv">
+        <button class="text-red-600 font-bold bg-transparent border-none text-base cursor-pointer hover:text-red-700 transition-colors duration-200" id="logoutButton" onclick="window.location.href='login_screen_final_clean.html'">Logout</button>
+    </div>
+    <div class="fixed bottom-4 left-1/2 -translate-x-1/2 z-50">
+        <button class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-full shadow-xl transition duration-300 transform hover:scale-105" id="toggleLangBtn" onclick="toggleLanguage()">🌐 English</button>
+    </div>
+    <aside class="w-full md:w-64 p-6 flex-shrink-0">
+        <h2 class="text-3xl font-bold mb-10 text-center text-blue-400" id="adminPanelTitle">Admin Panel</h2>
+        <ul class="list-none p-0" id="sidebarMenu">
+            <li class="py-3 px-5 mb-3 cursor-pointer active-menu-item" id="menu-businessSummary" onclick="showSection('businessSummary')">Business Summary</li>
+            <li class="py-3 px-5 mb-3 cursor-pointer" id="menu-users" onclick="showSection('users')">Users</li>
+            <li class="py-3 px-5 mb-3 cursor-pointer" id="menu-menu" onclick="showSection('menu')">Menu</li>
+            <li class="py-3 px-5 mb-3 cursor-pointer" id="menu-control" onclick="showSection('control')">System Control</li>
+            <li class="py-3 px-5 mb-3 cursor-pointer" id="menu-report" onclick="showSection('report')">Report</li>
+            <li class="py-3 px-5 mb-3 cursor-pointer" id="menu-whatsapp" onclick="showSection('whatsapp')">WhatsApp Campaign</li>
+            <li class="py-3 px-5 mb-3 cursor-pointer" id="menu-loyalty" onclick="showSection('loyalty')">Loyalty Points</li>
+            <li class="py-3 px-5 mb-3 cursor-pointer" id="menu-branchMaps" onclick="showSection('branchMaps')">Branch Maps</li>
+            <li class="py-3 px-5 mb-3 cursor-pointer" id="menu-offers" onclick="showSection('offers')">Offers</li>
+            <li class="py-3 px-5 mb-3 cursor-pointer" id="menu-pos" onclick="showSection('pos')">POS Integration</li>
+            <li class="py-3 px-5 mb-3 cursor-pointer" id="menu-deliveryDeals" onclick="showSection('deliveryDeals')">Logistics Delivery Company</li>
+            <li class="py-3 px-5 mb-3 cursor-pointer" id="menu-foodDeliveryApps" onclick="showSection('foodDeliveryApps')">App Food Delivery</li>
+            <li class="py-3 px-5 mb-3 cursor-pointer" id="menu-paymentGateway" onclick="showSection('paymentGateway')">Payment Gateway</li>
+        </ul>
+    </aside>
+    <main class="flex-1 p-8 overflow-y-auto">
+        <section class="active" id="businessSummary">
+            <h3 class="text-4xl font-extrabold text-gray-800 mb-8" id="summaryTitle">📊 Business Summary (Today)</h3>
+            <div class="mb-8 p-6 bg-white rounded-xl shadow-lg">
+                <label class="block text-gray-700 text-base font-semibold mb-3" for="branchFilter" id="branchFilterLabel">Filter by Branch:</label>
+                <select class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-300" id="branchFilter" onchange="filterBusinessSummaryByBranch()">
+                    <option id="branchAll" value="all">All Branches</option>
+                    <option id="branchAlMalikFaisal" value="al-malik-faisal">حي الملك فيصل</option>
+                    <option id="branchAlRawdah" value="al-rawdah">الروضة</option>
+                    <option id="branchAlWurudSummary" value="al-wurud-summary">الورود</option>
+                </select>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                <div class="kpi-box">
+                    <i class="fa-solid fa-receipt text-blue-500"></i>
+                    <p class="text-xl text-gray-700" id="kpi-totalOrders">Total Orders Today: <strong class="text-gray-900">148</strong></p>
+                </div>
+                <div class="kpi-box">
+                    <i class="fa-solid fa-circle-check text-green-500"></i>
+                    <p class="text-xl text-gray-700" id="kpi-completedOrders">Completed Orders: <strong class="text-gray-900">132</strong></p>
+                </div>
+                <div class="kpi-box">
+                    <i class="fa-solid fa-hourglass-half text-yellow-500"></i>
+                    <p class="text-xl text-gray-700" id="kpi-pendingOrders">Pending Orders: <strong class="text-gray-900">16</strong></p>
+                </div>
+                <div class="kpi-box">
+                    <i class="fa-solid fa-circle-xmark text-red-500"></i>
+                    <p class="text-xl text-gray-700" id="kpi-rejectedOrders">Rejected Orders: <strong class="text-red-500" id="rejectedCount">0</strong></p>
+                </div>
+                <div class="kpi-box">
+                    <i class="fa-solid fa-stopwatch text-indigo-500"></i>
+                    <p class="text-xl text-gray-700" id="kpi-avgPrepTime">Average Prep Time: <strong class="text-gray-900">11 min</strong></p>
+                </div>
+                <div class="kpi-box">
+                    <i class="fa-solid fa-sack-dollar text-green-600"></i>
+                    <p class="text-xl text-green-600" id="kpi-revenueEstimate">Revenue Estimate: <strong class="text-green-600">SAR 5,200</strong></p>
+                </div>
+            </div>
+            <div class="mb-8 p-6 bg-white rounded-xl shadow-lg">
+                <h4 class="text-3xl font-semibold text-gray-800 mb-6" id="rejectedLogTitle">❌ Rejected Orders Log</h4>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full">
+                        <thead>
+                            <tr>
+                                <th id="thOrderId">Order ID</th>
+                                <th id="thRejectedBy">Rejected By</th>
+                                <th id="thTime">Time</th>
+                            </tr>
+                        </thead>
+                        <tbody id="rejectedTable">
+                            <tr><td>#1052</td><td>Cashier Ahmed</td><td>2025-05-19 10:15 AM</td></tr>
+                            <tr><td>#1057</td><td>Cashier Laila</td><td>2025-05-19 11:03 AM</td></tr>
+                            <tr><td>#1061</td><td>Cashier Sami</td><td>2025-05-19 11:45 AM</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="mb-8 p-6 bg-white rounded-xl shadow-lg">
+                <h4 class="text-3xl font-semibold text-gray-800 mb-6" id="ordersByAppTitle">📱 Orders by App (Today)</h4>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full">
+                        <thead>
+                            <tr>
+                                <th id="thPlatform">Platform</th>
+                                <th id="thOrders">Orders</th>
+                                <th id="thRevenue">Revenue</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ordersByAppTable">
+                            <tr><td>HungerStation</td><td>60</td><td>SAR 2,200</td></tr>
+                            <tr><td>ToYou</td><td>50</td><td>SAR 1,800</td></tr>
+                            <tr><td>Jahez</td><td>38</td><td>SAR 1,200</td></tr>
+                            <tr><td>WhatsApp</td><td>25</td><td>SAR 900</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="p-6 bg-white rounded-xl shadow-lg">
+                <h4 class="text-3xl font-semibold text-gray-800 mb-6" id="activeBranchesTitle">🏢 Active Branches</h4>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full">
+                        <thead>
+                            <tr>
+                                <th id="thBranch">Branch</th>
+                                <th id="thBranchOrders">Orders</th>
+                                <th id="thBranchRevenue">Revenue</th>
+                                <th id="thTopItem">Top Item</th>
+                            </tr>
+                        </thead>
+                        <tbody id="activeBranchesTable">
+                            <tr><td>Al Yarmouk</td><td>50</td><td>SAR 1,900</td><td>Pizza</td></tr>
+                            <tr><td>Al Mugharzat</td><td>55</td><td>SAR 2,000</td><td>Burger</td></tr>
+                            <tr><td>Al Wurud</td><td>43</td><td>SAR 1,300</td><td>Shawarma</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+        <section id="users">
+            <h3 class="text-4xl font-extrabold text-gray-800 mb-8" id="usersTitle">👥 User Management</h3>
+            <div class="p-6 bg-white rounded-xl shadow-lg">
+                <button class="btn-success mb-6" id="addUserBtn" onclick="openAddUserModal()">➕ Add New User</button>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full">
+                        <thead>
+                            <tr>
+                                <th id="userThId">User ID</th>
+                                <th id="userThName">Name</th>
+                                <th id="userThRole">Role</th>
+                                <th id="userThBranch">Branch</th>
+                                <th id="userThActions">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usersTable">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+        <section id="menu">
+            <h3 class="text-4xl font-extrabold text-gray-800 mb-8" id="menuManagementTitle">🍽️ Menu Management</h3>
+            <button class="btn-success mb-6" id="addMealBtn" onclick="openAddMealModal()">➕ Add Meal</button>
+            <p class="text-gray-600 text-lg mb-6" id="menuDescription">Below is your restaurant menu with calories included.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" id="menuCategoriesContainer">
+            </div>
+            <div class="hidden" id="menuItemsContainer">
+                <button class="btn-secondary mb-6" id="backToCategoriesBtn" onclick="showAllCategories()">← Back to All Categories</button>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" id="menuItemsGrid">
+                </div>
+            </div>
+        </section>
+        <section id="control">
+            <h3 class="text-4xl font-extrabold text-gray-800 mb-8" id="systemControlTitle">⚙️ System Control</h3>
+            <div class="p-6 bg-white rounded-xl shadow-lg mb-8">
+                <h4 class="text-3xl font-semibold text-gray-800 mb-6" id="appStatusTitle">App Status</h4>
+                <div class="flex items-center justify-between mb-4">
+                    <span class="text-lg text-gray-700" id="appStatusLabel">App Online:</span>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input checked="" class="sr-only peer" type="checkbox" value=""/>
+                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                    </label>
+                </div>
+                <h4 class="text-3xl font-semibold text-gray-800 mt-8 mb-6" id="notificationSettingsTitle">Notification Settings</h4>
+                <div class="flex items-center justify-between mb-4">
+                    <span class="text-lg text-gray-700" id="newOrderNotifLabel">New Order Notifications:</span>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input checked="" class="sr-only peer" type="checkbox" value=""/>
+                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                    </label>
+                </div>
+                <div class="flex items-center justify-between mb-4">
+                    <span class="text-lg text-gray-700" id="lowStockNotifLabel">Low Stock Alerts:</span>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input class="sr-only peer" type="checkbox" value=""/>
+                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                    </label>
+                </div>
+            </div>
+            <div class="p-6 bg-white rounded-xl shadow-lg mt-8">
+                <h4 class="text-3xl font-semibold text-gray-800 mb-6" id="logisticsIntegrationTitle">Manage company Delivery</h4>
+                <div class="space-y-6" id="logisticsCompanyList">
+                    </div>
+            </div>
+        </section>
+        <section id="report">
+            <h3 class="text-4xl font-extrabold text-gray-800 mb-8" id="reportTitle">📈 Sales Report</h3>
+            <div class="p-6 bg-white rounded-xl shadow-lg mb-8">
+                <h4 class="text-3xl font-semibold text-gray-800 mb-6" id="reportFilterTitle">Filter Reports</h4>
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-base font-semibold mb-3" for="reportPeriod" id="reportPeriodLabel">Select Period:</label>
+                    <select class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-300" id="reportPeriod" onchange="updateReportData()">
+                        <option id="periodDay" value="day">Day</option>
+                        <option id="periodWeek" value="week">Week</option>
+                        <option id="periodMonth" value="month">Month</option>
+                        <option id="periodQuarter" value="quarter">Quarter</option>
+                    </select>
+                </div>
+                <h4 class="text-3xl font-semibold text-gray-800 mb-6 mt-8" id="deliveryChartTitle">Delivery Performance by Company</h4>
+                <div style="max-width: 600px; margin: 0 auto;"><canvas class="w-full h-64" id="deliveryChart" style="max-height: 300px; width: 100%; margin: 0 auto; display: block;"></canvas></div>
+            </div>
+            <div class="p-6 bg-white rounded-xl shadow-lg">
+                <h4 class="text-3xl font-semibold text-gray-800 mb-6" id="deliveryLogTitle">Delivery Log</h4>
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-base font-semibold mb-3" for="deliveryCompanyFilter" id="filterLabel">Filter by Company:</label>
+                    <input class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-300" id="deliveryCompanyFilter" onkeyup="filterDeliveryByCompany()" placeholder="Search company..." type="text"/>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full">
+                        <thead>
+                            <tr>
+                                <th id="deliveryThId">Order ID</th>
+                                <th id="deliveryThCompany">Company</th>
+                                <th id="deliveryThStatus">Status</th>
+                                <th id="deliveryThOrders">Orders</th>
+                                <th id="deliveryThDeliveryTime">Delivery Time</th>
+                        </tr>
+                        </thead>
+                        <tbody id="deliveryLogTable">
+                            <tr><td>#1001</td><td>HungerStation</td><td>Delivered</td><td>1</td><td>30 min</td></tr>
+                            <tr><td>#1002</td><td>ToYou</td><td>In Transit</td><td>2</td><td>-</td></tr>
+                            <tr><td>#1003</td><td>Jahez</td><td>Delivered</td><td>1</td><td>25 min</td></tr>
+                            <tr><td>#1004</td><td>HungerStation</td><td>Delivered</td><td>3</td><td>35 min</td></tr>
+                            <tr><td>#1005</td><td>ToYou</td><td>Delivered</td><td>1</td><td>28 min</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+        <section id="whatsapp">
+            <h3 class="text-4xl font-extrabold text-gray-800 mb-8" id="whatsappTitle">💬 WhatsApp Campaign</h3>
+
+            <div class="flex mb-6">
+                <button class="tab-button active-tab" id="composeTabBtn" onclick="showWhatsAppTab('compose')">Compose Campaign</button>
+                <button class="tab-button ml-2" id="reportsTabBtn" onclick="showWhatsAppTab('reports')">Campaign Reports</button>
+                <button class="tab-button ml-2" id="integrationTabBtn" onclick="showWhatsAppTab('integration')">WhatsApp API Integration</button>
+            </div>
+
+            <div class="tab-content active-tab-content" id="whatsappCompose">
+                <div class="p-6">
+                    <h4 class="text-3xl font-semibold text-gray-800 mb-6" id="composeMessageTitle">Compose Message</h4>
+
+                    <div class="mb-6">
+                        <h5 class="text-2xl font-semibold text-gray-800 mb-4" id="selectCustomersTitle">Select Customers:</h5>
+                        <div class="mb-4">
+                            <label class="block text-gray-700 text-base font-semibold mb-3" for="targetAudience" id="audienceLabel">Target Audience:</label>
+                            <select class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-300" id="targetAudience" onchange="filterCustomersByAudience()">
+                                <option id="audienceAll" value="all">All Customers</option>
+                                <option id="audienceLoyal" value="loyal">Loyal Customers</option>
+                                <option id="audienceNew" value="new">New Customers</option>
+                            </select>
+                        </div>
+                        <input type="text" id="customerSearchInput" placeholder="Search customers..." class="w-full p-3 border border-gray-300 rounded-lg mb-4 focus:ring-2 focus:ring-blue-300" onkeyup="filterCustomerTable()">
+                        <div class="overflow-x-auto max-h-60 custom-scrollbar rounded-lg border border-gray-200">
+                            <table class="min-w-full">
+                                <thead>
+                                    <tr>
+                                        <th class="py-2 px-4 text-left bg-gray-100">
+                                            <input type="checkbox" id="selectAllCustomers" onchange="toggleAllCustomers(this.checked)">
+                                        </th>
+                                        <th class="py-2 px-4 text-left bg-gray-100" id="customerThName">Customer Name</th>
+                                        <th class="py-2 px-4 text-left bg-gray-100" id="customerThTotalOrders">Total Orders</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="customerTableBody">
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                            <p class="text-blue-800 text-lg font-medium" id="selectedCustomersCount">Selected Customers: 0</p>
+                            <p class="text-blue-800 text-lg font-medium" id="selectedCustomersTotalOrders">Total Orders from Selected: 0</p>
+                        </div>
+                    </div>
+
+                    <div class="mb-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                        <label class="block text-gray-700 text-base font-semibold mb-3" for="excelUpload" id="excelUploadLabel">Upload Customer Numbers (Excel/CSV):</label>
+                        <input type="file" id="excelUpload" accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-300" onchange="handleExcelUpload()">
+                        <p class="text-sm text-gray-500 mt-2" id="excelFileName">No file selected.</p>
+                        <button class="btn-secondary px-4 py-2 mt-3 w-full" id="processExcelBtn" onclick="processExcelFile()">Process Excel</button>
+                    </div>
+
+                    <div class="mb-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                        <label class="block text-gray-700 text-base font-semibold mb-3" for="mediaUpload" id="mediaUploadLabel">Upload Photo/Video (Optional):</label>
+                        <input type="file" id="mediaUpload" accept="image/*,video/*" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-300" onchange="handleMediaUpload()">
+                        <p class="text-sm text-gray-500 mt-2" id="mediaFileName">No file selected.</p>
+                    </div>
+
+                    <div class="mb-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                        <label class="block text-gray-700 text-base font-semibold mb-3" for="websiteLink" id="websiteLinkLabel">Website Link (Optional):</label>
+                        <div class="flex gap-2">
+                            <input type="text" id="websiteLink" placeholder="e.g., https://yourrestaurant.com" class="flex-1 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-300">
+                            <button class="btn-secondary px-4 py-2" id="insertLinkBtn" onclick="insertLink()">Insert Link</button>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="block text-gray-700 text-base font-semibold mb-3" for="messageText" id="messageLabel">Message Content:</label>
+                        <textarea class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-300" id="messageText" placeholder="Enter your message here..." rows="8"></textarea>
+                    </div>
+
+                    <button class="btn-primary w-full flex items-center justify-center" id="sendMessageBtn" onclick="sendMessage()">
+                        <span id="sendMessageBtnText">Send Campaign Message</span>
+                        <span id="sendMessageSpinner" class="spinner hidden"></span>
+                    </button>
+                    <div id="sendMessageFeedback" class="mt-4 text-center text-lg font-semibold hidden"></div>
+                </div>
+            </div>
+
+            <div class="tab-content" id="whatsappReports">
+                <div class="p-6">
+                    <h4 class="text-3xl font-semibold text-gray-800 mb-6" id="campaignReportsTitle">Campaign Reports</h4>
+                    <div class="overflow-x-auto max-h-96 custom-scrollbar rounded-lg border border-gray-200 mb-6">
+                        <table class="min-w-full">
+                            <thead>
+                                <tr>
+                                    <th class="py-2 px-4 text-left bg-gray-100" id="reportThName">Campaign Name</th>
+                                    <th class="py-2 px-4 text-left bg-gray-100" id="reportThDate">Date Sent</th>
+                                    <th class="py-2 px-4 text-left bg-gray-100" id="reportThAudience">Audience</th>
+                                    <th class="py-2 px-4 text-left bg-gray-100" id="reportThSent">Sent</th>
+                                    <th class="py-2 px-4 text-left bg-gray-100" id="reportThDelivered">Delivered</th>
+                                    <th class="py-2 px-4 text-left bg-gray-100" id="reportThRead">Read</th>
+                                    <th class="py-2 px-4 text-left bg-gray-100" id="reportThFailed">Failed</th>
+                                    <th class="py-2 px-4 text-left bg-gray-100" id="reportThActions">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="campaignReportsTableBody">
+                                </tbody>
+                        </table>
+                    </div>
+                    <h4 class="text-3xl font-semibold text-gray-800 mb-6 mt-8" id="campaignPerformanceChartTitle">Campaign Performance Overview</h4>
+                    <div style="max-width: 600px; margin: 0 auto;"><canvas class="w-full h-64" id="campaignPerformanceChart" style="max-height: 300px; width: 100%; margin: 0 auto; display: block;"></canvas></div>
+                </div>
+            </div>
+
+            <div class="tab-content" id="whatsappIntegration">
+                <div class="p-6">
+                    <h4 class="text-3xl font-semibold text-gray-800 mb-6" id="whatsappIntegrationTitle">WhatsApp Channel Integration</h4>
+
+                    <div id="integrationStep1">
+                        <p class="text-lg text-gray-700 mb-4" id="addChannelPrompt">To send campaigns via WhatsApp, please add a new channel:</p>
+                        <button class="btn-success w-full" id="addChannelBtn" onclick="showIntegrationStep2()">➕ Add New Channel</button>
+                    </div>
+
+                    <div id="integrationStep2" class="hidden">
+                        <p class="text-lg text-gray-700 mb-4" id="selectCurrencyPrompt">Please select your billing currency for WhatsApp API:</p>
+                        <div class="mb-4">
+                            <label class="inline-flex items-center mr-6">
+                                <input type="radio" name="currency" value="usd" class="form-radio text-blue-600" checked>
+                                <span class="ml-2 text-gray-700">USD</span>
+                            </label>
+                            <label class="inline-flex items-center">
+                                <input type="radio" name="currency" value="sar" class="form-radio text-blue-600">
+                                <span class="ml-2 text-gray-700">SAR</span>
+                            </label>
+                        </div>
+                        <button class="btn-primary w-full" id="connectWhatsAppBtn" onclick="showIntegrationStep3()">Connect</button>
+                    </div>
+
+                    <div id="integrationStep3" class="hidden">
+                        <p class="text-lg text-gray-700 mb-4 text-center" id="pageReloadingText">Page is reloading to complete integration...</p>
+                        <div class="flex justify-center items-center mb-6">
+                            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
+                        </div>
+                        <p class="text-lg text-gray-700 mb-4" id="facebookLoginPrompt">Please log in with Facebook to finalize the WhatsApp API integration:</p>
+                        <button class="btn-primary w-full bg-blue-700 hover:bg-blue-800" onclick="alert('Simulating Facebook Login...');">
+                            <i class="fab fa-facebook-f mr-2"></i> <span id="loginWithFacebookBtn">Login with Facebook</span>
+                        </button>
+                        <p class="text-sm text-gray-500 mt-4 text-center" id="facebookNote">You will be redirected to Facebook for authentication.</p>
+                    </div>
+
+                    <div id="integrationSuccess" class="hidden text-center p-4 bg-green-100 text-green-700 rounded-lg">
+                        <p class="font-bold text-lg" id="whatsappApiIntegratedSuccess">🎉 WhatsApp API Integrated Successfully!</p>
+                        <p id="canNowComposeCampaigns">You can now compose and send campaigns.</p>
+                    </div>
+                </div>
+            </div>
+            </section>
+        
+<section id="loyalty">
+  <h3 class="text-4xl font-extrabold text-gray-800 mb-8 text-right">⭐ إدارة نقاط الولاء</h3>
+  <div class="p-6 bg-white rounded-xl shadow-lg space-y-6" dir="rtl">
+
+    <!-- Info Message -->
+    <div class="text-blue-700 bg-blue-50 border border-blue-200 p-4 rounded-lg text-right">
+      <p>🔁 قم بتخصيص النقاط، مدة صلاحيتها، وطريقة استبدالها. نظام ذكي لمكافأة عملائك بفعالية!</p>
+    </div>
+
+    <!-- Points per SAR -->
+    <div>
+      <label class="block text-gray-700 text-base font-semibold mb-2">🎯 عدد النقاط مقابل كل ريال</label>
+      <input type="number" id="pointsPerSAR" value="1" step="0.1"
+             class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-300"/>
+    </div>
+
+    <!-- SAR per Point -->
+    <div>
+      <label class="block text-gray-700 text-base font-semibold mb-2">💰 قيمة النقطة الواحدة بالريال</label>
+      <input type="number" id="sarPerPoint" value="0.1" step="0.01"
+             class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-300"/>
+    </div>
+
+    <!-- Expiration Period -->
+    <div>
+      <label class="block text-gray-700 text-base font-semibold mb-2">⏳ صلاحية النقاط (بالأيام)</label>
+      <input type="number" id="pointsExpiryDays" value="90" step="1"
+             class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-300"/>
+    </div>
+
+    <!-- Smart Customer Panel -->
+    <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+      <p class="mb-2 text-sm text-gray-600">💡 حاسبة العميل:</p>
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div>
+          <label class="block text-sm font-medium mb-1">المبلغ الذي أنفقه (ريال):</label>
+          <input type="number" id="simSpent" class="w-full p-2 border rounded" value="100" oninput="simulatePointsSmart()"/>
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-1">النقاط المكتسبة:</label>
+          <p id="simPoints" class="p-2 bg-white border rounded text-center">100</p>
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-1">تاريخ انتهاء النقاط:</label>
+          <p id="simExpiry" class="p-2 bg-white border rounded text-center">---</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Save Button -->
+    <button class="btn-primary w-full mt-4" onclick="saveLoyaltySettings()">💾 حفظ الإعدادات</button>
+  </div>
+
+<div class="p-6 bg-white rounded-xl shadow-lg space-y-4 mt-8 text-right">
+  <h4 class="text-2xl font-semibold text-gray-800">📲 تنبيه العملاء</h4>
+  <p class="text-gray-600">يمكنك تجربة إرسال تنبيه يدويًا للعملاء الذين لديهم نقاط على وشك الانتهاء.</p>
+  <button class="btn-success w-full" onclick="triggerWhatsAppReminder()">📢 تنبيه العملاء بانتهاء النقاط عبر واتساب</button>
+</div>
+
+<script>
+function triggerWhatsAppReminder() {
+  alert('🚀 تم تنفيذ التنبيه التجريبي! سيتم إرسال تنبيه إلى العملاء الذين أوشكت نقاطهم على الانتهاء (محاكاة فقط).');
+}
+</script>
+</section>
+
+<script>
+  function simulatePointsSmart() {
+    const spent = parseFloat(document.getElementById('simSpent').value) || 0;
+    const pointsPerSAR = parseFloat(document.getElementById('pointsPerSAR').value) || 1;
+    const expiryDays = parseInt(document.getElementById('pointsExpiryDays').value) || 90;
+
+    const points = spent * pointsPerSAR;
+    document.getElementById('simPoints').textContent = points.toFixed(1);
+
+    const today = new Date();
+    today.setDate(today.getDate() + expiryDays);
+    const expiryDate = today.toISOString().split('T')[0];
+    document.getElementById('simExpiry').textContent = expiryDate;
+  }
+</script>
+
+        <section id="branchMaps">
+            <h3 class="text-4xl font-extrabold text-gray-800 mb-8" id="branchMapsTitle">🗺️ Branch Maps</h3>
+            <div class="p-6 bg-white rounded-xl shadow-lg">
+                <button class="btn-success mb-6" id="addBranchBtn" onclick="openAddBranchModal()">➕ Add New Branch</button>
+                <h4 class="text-3xl font-semibold text-gray-800 mb-6" id="branchLocationTitle">Branch Locations</h4>
+                <div class="w-full h-96 bg-gray-200 rounded-lg flex items-center justify-center text-gray-500" id="mapContainer">
+                    <p id="mapPlaceholder">Map integration goes here...</p>
+                </div>
+                <div class="mt-6">
+                    <label class="block text-gray-700 text-base font-semibold mb-3" for="selectBranch" id="selectBranchLabel">Select Branch:</label>
+                    <select class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-300" id="selectBranch">
+                        <option id="branchYarmouk" value="al-yarmouk">Al Yarmouk</option>
+                        <option id="branchMugharzat" value="al-mugharzat">Al Mugharzat</option>
+                        <option id="branchWurud" value="al-wurud">Al Wurud</option>
+                    </select>
+                </div>
+                <button class="btn-primary w-full mt-4" id="viewOnMapBtn" onclick="viewOnMap()">View on Map</button>
+            </div>
+        </section>
+        <section id="offers">
+            <h3 class="text-4xl font-extrabold text-gray-800 mb-8" id="offersSectionTitle">🎁 Offers Management</h3>
+            <button class="btn-success mb-6" id="addOfferBtn" onclick="openOfferModal()">➕ Add New Offer</button>
+            <div class="overflow-x-auto p-6 bg-white rounded-xl shadow-lg">
+                <table class="min-w-full">
+                    <thead>
+                        <tr>
+                            <th id="offerThName">Offer Name</th>
+                            <th id="offerThItem">Linked Item</th>
+                            <th id="offerThDiscount">Discount Price</th>
+                            <th id="offerThValidUntil">Valid Until</th>
+                            <th id="offerThActions">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="offersTable">
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section id="pos">
+            <div class="bg-gradient-to-r from-blue-500 to-purple-600 text-white p-6 rounded-xl shadow-lg mb-8 text-center font-bold text-2xl animate-pulse" id="posComingSoonBanner">
+                🚧 Coming Soon: Advanced POS Integrations! 🛒
+            </div>
+
+            <h3 class="text-4xl font-extrabold text-gray-800 mb-8" id="posTitle">🛒 POS Integration</h3>
+            <div class="p-6 bg-white rounded-xl shadow-lg">
+                <h4 class="text-3xl font-semibold text-gray-800 mb-6" id="posStatusTitle">POS Connection Status: <span class="text-red-500 font-bold" id="posStatus">Disconnected</span></h4>
+                <div class="space-y-6" id="posIntegrationList">
+                </div>
+                <p class="text-gray-600 text-sm mt-4" id="lastSync">Last Sync: Never</p>
+            </div>
+        </section>
+        <section id="deliveryDeals">
+            <div class="bg-gradient-to-r from-blue-500 to-purple-600 text-white p-6 rounded-xl shadow-lg mb-8 text-center font-bold text-2xl animate-pulse" id="comingSoonBanner">
+                🚀 Coming Soon: Advanced Logistics Features! 🚚
+            </div>
+
+            <h3 class="text-4xl font-extrabold text-gray-800 mb-8" id="deliveryDealsTitle">🚚 Logistics Delivery Company</h3>
+            <div class="p-6 bg-white rounded-xl shadow-lg mb-8">
+                <h4 class="text-3xl font-semibold text-gray-800 mb-6" id="logisticsSummaryTitle">Deliveries by Company</h4>
+                <div class="space-y-2" id="logisticsDeliverySummary">
+                    </div>
+            </div>
+            <button class="btn-success mb-6" id="addDealBtn" onclick="openAddDealModal()">➕ Add New Deal</button>
+            <div class="overflow-x-auto p-6 bg-white rounded-xl shadow-lg">
+                <h4 class="text-3xl font-semibold text-gray-800 mb-6" id="logisticsOrderLogTitle">Logistics Order Log</h4>
+                <table class="min-w-full">
+                    <thead>
+                        <tr>
+                            <th id="logisticsThOrderId">Order ID</th>
+                            <th id="logisticsThCompany">Company</th>
+                            <th id="logisticsThRiderId">Rider ID</th>
+                            <th id="logisticsThRider">Rider Name</th>
+                            <th id="logisticsThStatus">Status</th>
+                            <th id="logisticsThDeliveryTime">Delivery Time</th>
+                        </tr>
+                    </thead>
+                    <tbody id="logisticsDeliveryOrdersTable">
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section id="foodDeliveryApps">
+            <div class="bg-gradient-to-r from-pink-500 to-red-600 text-white p-6 rounded-xl shadow-lg mb-8 text-center font-bold text-2xl animate-pulse" id="foodDeliveryComingSoonBanner">
+                🍔 Coming Soon: Seamless Food Delivery App Integrations! 🍟
+            </div>
+            <h3 class="text-4xl font-extrabold text-gray-800 mb-8" id="foodDeliveryAppsTitle">📱 App Food Delivery Integrations</h3>
+            <div class="p-6 bg-white rounded-xl shadow-lg">
+                <h4 class="text-3xl font-semibold text-gray-800 mb-6" id="foodAppStatusTitle">Food App Connection Status: <span class="text-red-500 font-bold" id="foodAppStatus">Disconnected</span></h4>
+                <div class="space-y-6" id="foodAppIntegrationList">
+                    </div>
+                <p class="text-gray-600 text-sm mt-4" id="foodAppLastSync">Last Sync: Never</p>
+            </div>
+        </section>
+
+        <section id="paymentGateway">
+            <div class="bg-gradient-to-r from-purple-500 to-indigo-600 text-white p-6 rounded-xl shadow-lg mb-8 text-center font-bold text-2xl animate-pulse" id="paymentGatewayComingSoonBanner">
+                💳 Coming Soon: Secure Payment Gateway Integrations! 🔐
+            </div>
+            <h3 class="text-4xl font-extrabold text-gray-800 mb-8" id="paymentGatewayTitle">💳 Payment Gateway Integration</h3>
+            <div class="p-6 bg-white rounded-xl shadow-lg">
+                <h4 class="text-3xl font-semibold text-gray-800 mb-6" id="paymentGatewayStatusTitle">Payment Gateway Connection Status: <span class="text-red-500 font-bold" id="paymentStatus">Disconnected</span></h4>
+                <div class="space-y-6" id="paymentGatewayList">
+                    </div>
+                <p class="text-gray-600 text-sm mt-4" id="paymentGatewayLastSync">Last Sync: Never</p>
+            </div>
+        </section>
+
+    </main>
+    <div class="modal-overlay hidden fixed inset-0" id="addUserModal">
+        <div class="modal-content p-8 w-11/12 md:max-w-md">
+            <span class="close-button" onclick="closeAddUserModal()">×</span>
+            <h3 class="text-3xl font-semibold text-gray-800 mb-6" id="addUserModalTitle">Add New User</h3>
+            <label class="block text-gray-700 text-base font-semibold mb-2" for="userName" id="userNameLabel">Name:</label>
+            <input id="userName" placeholder="Enter user's name" type="text"/>
+            <label class="block text-gray-700 text-base font-semibold mb-2" for="userPassword" id="userPasswordLabel">Password:</label>
+            <input id="userPassword" placeholder="Enter password" type="password"/>
+            <label class="block text-gray-700 text-base font-semibold mb-2" for="confirmPassword" id="confirmPasswordLabel">Confirm Password:</label>
+            <input id="confirmPassword" placeholder="Confirm password" type="password"/>
+            <div id="passwordMismatchError" class="text-red-500 text-sm mt-1 mb-3 hidden" role="alert">Passwords do not match.</div>
+            <label class="block text-gray-700 text-base font-semibold mb-2" for="userRole" id="userRoleLabel">Role:</label>
+            <select id="userRole" onchange="toggleCustomRolePrivileges()">
+                <option id="roleAdmin" value="admin">Admin</option>
+                <option id="roleCashier" value="cashier">Cashier</option>
+                <option id="roleManager" value="manager">Manager</option>
+                <option id="roleCustom" value="custom">Custom Role</option>
+            </select>
+
+            <div id="customRolePrivileges" class="hidden mt-4 p-4 bg-gray-100 rounded-lg border border-gray-200">
+                <h4 class="text-xl font-semibold text-gray-800 mb-3" id="defineCustomPrivilegesTitle">Define Custom Privileges</h4>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2" id="privilegeCheckboxes">
+                    </div>
+            </div>
+
+            <label class="block text-gray-700 text-base font-semibold mb-2" for="userBranch" id="userBranchLabel">Branch:</label>
+            <select id="userBranch" class="w-full p-3 border border-gray-300 rounded-lg mb-4 focus:ring-2 focus:ring-blue-300">
+                <option value="المغرزات">المغرزات</option>
+                <option value="اليرموك">اليرموك</option>
+                <option value="قرطبة">قرطبة</option>
+                <option value="العليا">العليا</option>
+            </select>
+            <button class="btn-primary w-full mt-4" id="saveUserBtn" onclick="saveUser()">Save User</button>
+        </div>
+    </div>
+    <div class="modal-overlay hidden fixed inset-0" id="addMealModal">
+        <div class="modal-content p-8 w-11/12 md:max-w-md">
+            <span class="close-button" onclick="closeAddMealModal()">×</span>
+            <h3 class="text-3xl font-semibold text-gray-800 mb-6" id="addMealModalTitle">Add New Meal</h3>
+            <label class="block text-gray-700 text-base font-semibold mb-2" for="mealName" id="mealNameLabel">Meal Name:</label>
+            <input id="mealName" placeholder="e.g., Margherita Pizza" type="text"/>
+            <label class="block text-gray-700 text-base font-semibold mb-2" for="mealCategory" id="mealCategoryLabel">Category:</label>
+            <select class="w-full p-3 border border-gray-300 rounded-lg mb-4 focus:ring-2 focus:ring-blue-300" id="mealCategory">
+                <option value="">-- Select or Add New --</option>
+            </select>
+            <input class="w-full p-3 border border-gray-300 rounded-lg mb-4 hidden focus:ring-2 focus:ring-blue-300" id="newMealCategory" placeholder="New Category Name (optional)" type="text"/>
+            <label class="block text-gray-700 text-base font-semibold mb-2" for="mealPrice" id="mealPriceLabel">Price (SAR):</label>
+            <input id="mealPrice" placeholder="e.g., 35.00" step="0.01" type="number"/>
+            <label class="block text-gray-700 text-base font-semibold mb-2" for="mealCalories" id="mealCaloriesLabel">Calories:</label>
+            <input id="mealCalories" placeholder="e.g., 600" type="number"/>
+            <label class="block text-gray-700 text-base font-semibold mb-2" for="mealImage" id="mealImageLabel">Image URL (Optional):</label>
+            <input id="mealImage" placeholder="e.g., https://placehold.co/300x150" type="text"/>
+            <button class="btn-primary w-full mt-4" id="saveMealBtn" onclick="saveMeal()">Save Meal</button>
+        </div>
+    </div>
+    <div class="modal-overlay hidden fixed inset-0" id="offerModal">
+        <div class="modal-content p-8 w-11/12 md:max-w-md">
+            <span class="close-button" onclick="closeOfferModal()">×</span>
+            <h3 class="text-3xl font-semibold text-gray-800 mb-6" id="addOfferModalTitle">Add New Offer</h3>
+            <label class="block text-gray-700 text-base font-semibold mb-2" for="offerName" id="offerNameLabel">Offer Name:</label>
+            <input id="offerName" placeholder="e.g., Buy One Get One Free" type="text"/>
+            <label class="block text-gray-700 text-base font-semibold mb-2" for="linkedItem" id="linkedItemLabel">Linked Item:</label>
+            <input id="linkedItem" placeholder="e.g., Pizza" type="text"/>
+            <label class="block text-gray-700 text-base font-semibold mb-2" for="discountPrice" id="discountPriceLabel">Discount Price (SAR):</label>
+            <input id="discountPrice" placeholder="e.g., 10.00" step="0.01" type="number"/>
+            <label class="block text-gray-700 text-base font-semibold mb-2" for="validUntil" id="validUntilLabel">Valid Until:</label>
+            <input id="validUntil" type="date"/>
+            <button class="btn-primary w-full mt-4" id="saveOfferBtn" onclick="saveOffer()">Save Offer</button>
+        </div>
+    </div>
+    <div class="modal-overlay hidden fixed inset-0" id="addDealModal">
+        <div class="modal-content p-8 w-11/12 md:max-w-md">
+            <span class="close-button" onclick="closeAddDealModal()">×</span>
+            <h3 class="text-3xl font-semibold text-gray-800 mb-6" id="addDealModalTitle">Add New Delivery Deal</h3>
+            <label class="block text-gray-700 text-base font-semibold mb-2" for="dealName" id="dealNameLabel">Deal Name:</label>
+            <input id="dealName" placeholder="e.g., Free Delivery Weekend" type="text"/>
+            <label class="block text-gray-700 text-base font-semibold mb-2" for="dealPlatform" id="dealPlatformLabel">Platform:</label>
+            <select id="dealPlatform">
+                <option value="HungerStation">HungerStation</option>
+                <option value="ToYou">ToYou</option>
+                <option value="Jahez">Jahez</option>
+                <option value="WhatsApp">WhatsApp</option>
+                <option value="Noon">Noon</option>
+            </select>
+            <label class="block text-gray-700 text-base font-semibold mb-2" for="dealDiscount" id="dealDiscountLabel">Discount (%):</label>
+            <input id="dealDiscount" max="100" min="0" placeholder="e.g., 15" type="number"/>
+            <label class="block text-gray-700 text-base font-semibold mb-2" for="dealValidUntil" id="dealValidUntilLabel">Valid Until:</label>
+            <input id="dealValidUntil" type="date"/>
+            <button class="btn-primary w-full mt-4" id="saveDealBtn" onclick="saveDeal()">Save Deal</button>
+        </div>
+    </div>
+    <div class="modal-overlay hidden fixed inset-0" id="addBranchModal">
+        <div class="modal-content p-8 w-11/12 md:max-w-md">
+            <span class="close-button" onclick="closeAddBranchModal()">×</span>
+            <h3 class="text-3xl font-semibold text-gray-800 mb-6" id="addBranchModalTitle">Add New Branch</h3>
+            <label class="block text-gray-700 text-base font-semibold mb-2" for="branchName" id="branchNameLabel">Branch Name:</label>
+            <input id="branchName" placeholder="e.g., Downtown Branch" type="text"/>
+            <label class="block text-gray-700 text-base font-semibold mb-2" for="branchAddress" id="branchAddressLabel">Address:</label>
+            <input id="branchAddress" placeholder="e.g., 123 Main St" type="text"/>
+            <label class="block text-gray-700 text-base font-semibold mb-2" for="branchLat" id="branchLatLabel">Latitude (Optional):</label>
+            <input id="branchLat" placeholder="e.g., 34.0522" step="any" type="number"/>
+            <label class="block text-gray-700 text-base font-semibold mb-2" for="branchLon" id="branchLonLabel">Longitude (Optional):</label>
+            <input id="branchLon" placeholder="e.g., -118.2437" step="any" type="number"/>
+            <button class="btn-primary w-full mt-4" id="saveBranchBtn" onclick="saveBranch()">Save Branch</button>
+        </div>
+    </div>
+
+    <div class="modal-overlay hidden fixed inset-0" id="riderDetailsModal">
+        <div class="modal-content p-8 w-11/12 md:max-w-md">
+            <span class="close-button" onclick="closeRiderDetailsModal()">×</span>
+            <h3 class="text-3xl font-semibold text-gray-800 mb-6" id="riderDetailsModalTitle">Rider Details</h3>
+            <div class="mb-4">
+                <p class="text-lg text-gray-700" id="riderIdLabel">Rider ID: <strong id="modalRiderId" class="text-gray-900"></strong></p>
+            </div>
+            <div class="mb-4">
+                <p class="text-lg text-gray-700" id="riderNameLabel">Rider Name: <strong id="modalRiderName" class="text-gray-900"></strong></p>
+            </div>
+            <div class="mb-4">
+                <p class="text-lg text-gray-700" id="amountNeededLabel">Amount Needed: <strong id="modalAmountNeeded" class="text-gray-900"></strong></p>
+            </div>
+            <button class="btn-primary w-full mt-4" id="closeRiderDetailsBtn" onclick="closeRiderDetailsModal()">Close</button>
+        </div>
+    </div>
+
+    <div class="modal-overlay hidden fixed inset-0" id="campaignDetailsModal">
+        <div class="modal-content p-8 w-11/12 md:max-w-2xl">
+            <span class="close-button" onclick="closeCampaignDetailsModal()">×</span>
+            <h3 class="text-3xl font-semibold text-gray-800 mb-6" id="campaignDetailsModalTitle">Campaign Details</h3>
+            <div class="mb-4">
+                <p class="text-lg text-gray-700" id="modalCampaignNameLabel">Campaign Name: <strong id="modalCampaignName" class="text-gray-900"></strong></p>
+            </div>
+            <div class="mb-4">
+                <p class="text-lg text-gray-700" id="modalCampaignDateLabel">Date Sent: <strong id="modalCampaignDate" class="text-gray-900"></strong></p>
+            </div>
+            <div class="mb-4">
+                <p class="text-lg text-gray-700" id="modalCampaignAudienceLabel">Audience: <strong id="modalCampaignAudience" class="text-gray-900"></strong></p>
+            </div>
+            <div class="mb-4">
+                <p class="text-lg text-gray-700" id="modalCampaignMessageLabel">Message Content:</p>
+                <div id="modalCampaignMessage" class="p-3 bg-gray-100 rounded-lg text-gray-800 whitespace-pre-wrap"></div>
+            </div>
+            <div class="mb-4" id="modalCampaignMediaContainer">
+                <p class="text-lg text-gray-700" id="modalCampaignMediaLabel">Attached Media:</p>
+                <img id="modalCampaignMediaImage" src="" alt="Campaign Media" class="max-w-full h-auto rounded-lg mt-2 hidden">
+                <video id="modalCampaignMediaVideo" src="" controls class="max-w-full h-auto rounded-lg mt-2 hidden"></video>
+                <p id="modalCampaignMediaNone" class="text-gray-600 mt-2 hidden">No media attached.</p>
+            </div>
+            <div class="mb-4">
+                <p class="text-lg text-gray-700" id="modalCampaignWebsiteLabel">Website Link: <a id="modalCampaignWebsiteLink" href="#" target="_blank" class="text-blue-600 hover:underline"></a></p>
+            </div>
+            <h5 class="text-xl font-semibold text-gray-800 mb-3" id="modalCampaignStatusBreakdownTitle">Status Breakdown:</h5>
+            <div class="overflow-x-auto max-h-60 custom-scrollbar rounded-lg border border-gray-200">
+                <table class="min-w-full">
+                    <thead>
+                        <tr>
+                            <th class="py-2 px-4 text-left bg-gray-100" id="modalStatusThCustomer">Customer</th>
+                            <th class="py-2 px-4 text-left bg-gray-100" id="modalStatusThStatus">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="modalCampaignStatusTableBody">
+                    </tbody>
+                </table>
+            </div>
+            <button class="btn-primary w-full mt-4" id="closeCampaignDetailsBtn" onclick="closeCampaignDetailsModal()">Close</button>
+        </div>
+    </div>
+
+    <div class="modal-overlay hidden fixed inset-0" id="customerDetailsModal">
+        <div class="modal-content p-8 w-11/12 md:max-w-md">
+            <span class="close-button" onclick="closeCustomerDetailsModal()">×</span>
+            <h3 class="text-3xl font-semibold text-gray-800 mb-6" id="customerDetailsModalTitle">Customer Details</h3>
+            <div class="mb-4">
+                <p class="text-lg text-gray-700" id="customerDetailsNameLabel">Customer Name: <strong id="modalCustomerName" class="text-gray-900"></strong></p>
+            </div>
+            <div class="mb-4">
+                <p class="text-lg text-gray-700" id="customerDetailsTotalOrdersLabel">Total Orders: <strong id="modalCustomerTotalOrders" class="text-gray-900"></strong></p>
+            </div>
+            <button class="btn-primary w-full mt-4" id="closeCustomerDetailsBtn" onclick="closeCustomerDetailsModal()">Close</button>
+        </div>
+    </div>
+
+    <div class="modal-overlay hidden fixed inset-0" id="viewPrivilegesModal">
+        <div class="modal-content p-8 w-11/12 md:max-w-md">
+            <span class="close-button" onclick="closeViewPrivilegesModal()">×</span>
+            <h3 class="text-3xl font-semibold text-gray-800 mb-6" id="viewPrivilegesModalTitle">User Privileges: <span id="privilegeUserName" class="font-normal"></span> (<span id="privilegeUserRole" class="font-normal"></span>)</h3>
+            <div class="space-y-2" id="userPrivilegesList">
+                </div>
+            <button class="btn-primary w-full mt-6" id="closeViewPrivilegesBtn" onclick="closeViewPrivilegesModal()">Close</button>
+        </div>
+    </div>
+
+    <script>
+        // --- Global Variables ---
+        let currentLang = 'en'; // Default language
+        let deliveryChartInstance; // For Chart.js instance
+        let campaignPerformanceChartInstance; // For WhatsApp Campaign Chart.js instance
+
+        // --- Privilege Definitions ---
+        const allPrivileges = {
+            manageUsers: "Manage Users",
+            manageMenu: "Manage Menu",
+            viewReports: "View Reports",
+            manageOffers: "Manage Offers",
+            managePOS: "Manage POS Integration",
+            manageCompanyDelivery: "Manage company Delivery",
+            manageFoodApps: "Manage Food Delivery Apps",
+            managePayments: "Manage Payment Gateways",
+            manageWhatsappCampaigns: "Manage WhatsApp Campaigns",
+            manageLoyalty: "Manage Loyalty Points",
+            manageBranches: "Manage Branches"
+        };
+
+        // Default privileges for standard roles
+        const rolesPrivileges = {
+            admin: {
+                manageUsers: true,
+                manageMenu: true,
+                viewReports: true,
+                manageOffers: true,
+                managePOS: true,
+                manageCompanyDelivery: true,
+                manageFoodApps: true,
+                managePayments: true,
+                manageWhatsappCampaigns: true,
+                manageLoyalty: true,
+                manageBranches: true
+            },
+            cashier: {
+                manageUsers: false,
+                manageMenu: false,
+                viewReports: true,
+                manageOffers: false,
+                managePOS: true, // Can interact with POS for orders
+                manageCompanyDelivery: false,
+                manageFoodApps: false,
+                managePayments: true, // Can process payments
+                manageWhatsappCampaigns: false,
+                manageLoyalty: false,
+                manageBranches: false
+            },
+            manager: {
+                manageUsers: true, // Can manage some users (e.g., cashiers)
+                manageMenu: true,
+                viewReports: true,
+                manageOffers: true,
+                managePOS: true,
+                manageCompanyDelivery: true,
+                manageFoodApps: true,
+                managePayments: true,
+                manageWhatsappCampaigns: true,
+                manageLoyalty: true,
+                manageBranches: true
+            },
+            // 'custom' role privileges will be set dynamically per user
+        };
+
+        // --- Data Storage (for demonstration, in a real app this would be fetched from a backend) ---
+        let users = [
+            { id: 'U001', name: 'John Doe', password: 'password123', role: 'admin', branch: 'المغرزات', privileges: { ...rolesPrivileges.admin } },
+            { id: 'U002', name: 'Jane Smith', password: 'password123', role: 'cashier', branch: 'اليرموك', privileges: { ...rolesPrivileges.cashier } },
+            { id: 'U003', name: 'Peter Jones', password: 'password123', role: 'manager', branch: 'قرطبة', privileges: { ...rolesPrivileges.manager } },
+            { id: 'U004', name: 'Custom User', password: 'password123', role: 'custom', branch: 'العليا', privileges: {
+                manageUsers: false,
+                manageMenu: true,
+                viewReports: true,
+                manageOffers: false,
+                managePOS: true,
+                manageCompanyDelivery: false,
+                manageFoodApps: false,
+                managePayments: true,
+                manageWhatsappCampaigns: false,
+                manageLoyalty: false,
+                manageBranches: false
+            }}
+        ];
+
+        let menuCategories = [
+            {
+                id: 'CAT001',
+                name: 'Sandwiches',
+                categoryImageUrl: 'https://placehold.co/80x80/4299e1/ffffff?text=Sandwiches',
+                items: [
+                    { id: 'M001', name: 'Shawarma Wrap', price: 18.00, calories: 450, imageUrl: 'https://placehold.co/300x180/e2e8f0/333333?text=Shawarma' }
+                ]
+            },
+            {
+                id: 'CAT002',
+                name: 'Pizzas',
+                categoryImageUrl: 'https://placehold.co/80x80/4299e1/ffffff?text=Pizzas',
+                items: [
+                    { id: 'M002', name: 'Pepperoni Pizza', price: 40.00, calories: 850, imageUrl: 'https://placehold.co/300x180/e2e8f0/333333?text=Pepperoni+Pizza' }
+                ]
+            }
+        ];
+
+        let offers = [
+            { id: 'OFF001', name: 'Weekend Special', item: 'Pepperoni Pizza', discount: 10.00, validUntil: '2025-12-31' },
+            { id: 'OFF002', name: 'Lunch Deal', item: 'Shawarma Wrap', discount: 5.00, validUntil: '2025-11-15' }
+        ];
+
+        let deliveryDeals = [
+            { id: 'DD001', name: 'Free Delivery Weekend', platform: 'HungerStation', discount: 100, validUntil: '2025-06-30' },
+            { id: 'DD002', name: 'First Order Discount', platform: 'ToYou', discount: 20, validUntil: '2025-07-31' }
+        ];
+
+        let branches = [
+            { id: 'B001', name: 'المغرزات', address: '456 Mugharzat Rd', lat: 24.7801, lon: 46.6831 },
+            { id: 'B002', name: 'اليرموك', address: '123 Yarmouk St', lat: 24.774265, lon: 46.738586 },
+            { id: 'B003', name: 'قرطبة', address: '789 Qurtabah Ave', lat: 24.8000, lon: 46.7000 },
+            { id: 'B004', name: 'العليا', address: '101 Olaya St', lat: 24.6900, lon: 46.6900 }
+        ];
+
+        // New data for logistics companies (for system control toggles and rider details)
+        let logisticsCompanies = [
+            { name: 'SwiftShip Logistics', enabled: true, rider: { id: 'R001', name: 'Ahmed Khan', amountNeeded: 'SAR 25.00' } },
+            { name: 'GlobalRoute Express', enabled: false, rider: { id: 'R002', name: 'Fatima Al-Ali', amountNeeded: 'SAR 30.00' } },
+            { name: 'CityLink Couriers', enabled: true, rider: { id: 'R003', name: 'Omar Hassan', amountNeeded: 'SAR 20.00' } },
+            { name: 'RapidFreight Solutions', enabled: true, rider: { id: 'R004', name: 'Layla Mansour', amountNeeded: 'SAR 28.00' } },
+            { name: 'PrimeParcel Delivery', enabled: false, rider: { id: 'R005', name: 'Khalid Abdullah', amountNeeded: 'SAR 22.00' } }
+        ];
+
+        // New data for individual logistics delivery orders
+        let logisticsDeliveryOrders = [
+            { orderId: '#L1001', company: 'SwiftShip Logistics', riderId: 'R001', riderName: 'Ahmed Khan', status: 'Delivered', deliveryTime: '25 min', orderRevenue: 120.00, companyFee: 10.00 },
+            { orderId: '#L1002', company: 'CityLink Couriers', riderId: 'R003', riderName: 'Omar Hassan', status: 'In Transit', deliveryTime: '-', orderRevenue: 80.00, companyFee: 8.00 },
+            { orderId: '#L1003', company: 'SwiftShip Logistics', riderId: 'R001', riderName: 'Ahmed Khan', status: 'Delivered', deliveryTime: '30 min', orderRevenue: 150.00, companyFee: 12.00 },
+            { orderId: '#L1004', company: 'RapidFreight Solutions', riderId: 'R004', riderName: 'Layla Mansour', status: 'Delivered', deliveryTime: '22 min', orderRevenue: 95.00, companyFee: 9.50 },
+            { orderId: '#L1005', company: 'CityLink Couriers', riderId: 'R003', riderName: 'Omar Hassan', status: 'Pending', deliveryTime: '-', orderRevenue: 70.00, companyFee: 7.00 },
+            { orderId: '#L1006', company: 'SwiftShip Logistics', riderId: 'R001', riderName: 'Ahmed Khan', status: 'Delivered', deliveryTime: '28 min', orderRevenue: 110.00, companyFee: 11.00 },
+            { orderId: '#L1007', company: 'GlobalRoute Express', riderId: 'R002', riderName: 'Fatima Al-Ali', status: 'Delivered', deliveryTime: '35 min', orderRevenue: 130.00, companyFee: 13.00 },
+        ];
+
+        // New data for food delivery apps - Added 'Keeta'
+        let foodDeliveryApps = [
+            { name: 'HungerStation', enabled: true },
+            { name: 'ToYou', enabled: true },
+            { name: 'Keeta', enabled: false }, // Added Keeta (Careem)
+            { name: 'Jahez', enabled: false },
+            { name: 'Noon', enabled: false }
+        ];
+
+        // New data for customers with order history
+        let customers = [
+            { id: 'C001', name: 'Ali Abdullah', orders: [
+                { id: '#ORD001', date: '2025-05-20', total: 55.00, items: ['Shawarma Wrap', 'Fries'] },
+                { id: '#ORD002', date: '2025-05-22', total: 70.00, items: ['Pepperoni Pizza', 'Cola'] }
+            ], type: 'loyal'}, // Example: Loyal customer (more than 1 order)
+            { id: 'C002', name: 'Sara Mohammed', orders: [
+                { id: '#ORD003', date: '2025-05-19', total: 30.00, items: ['Burger', 'Water'] }
+            ], type: 'new'}, // Example: New customer (1 order)
+            { id: 'C003', name: 'Khalid Al-Hamad', orders: [
+                { id: '#ORD004', date: '2025-05-18', total: 120.00, items: ['Family Meal', 'Dessert'] },
+                { id: '#ORD005', date: '2025-05-21', total: 45.00, items: ['Chicken Sandwich'] },
+                { id: '#ORD006', date: '2025-05-23', total: 60.00, items: ['Pizza', 'Salad'] }
+            ], type: 'loyal'},
+            { id: 'C004', name: 'Noura Salem', orders: [
+                { id: '#ORD007', date: '2025-05-24', total: 80.00, items: ['Pasta', 'Juice'] }
+            ], type: 'new'},
+            { id: 'C005', name: 'Fahad Nasir', orders: [
+                { id: '#ORD008', date: '2025-05-25', total: 90.00, items: ['Steak', 'Salad'] },
+                { id: '#ORD009', date: '2025-05-26', total: 65.00, items: ['Sandwich', 'Soup'] }
+            ], type: 'loyal'},
+            { id: 'C006', name: 'Husman', orders: [ // Added Husman for demonstration
+                { id: '#ORD010', date: '2025-05-01', total: 50.00, items: ['Burger', 'Fries'] },
+                { id: '#ORD011', date: '2025-05-05', total: 75.00, items: ['Pizza', 'Cola'] },
+                { id: '#ORD012', date: '2025-05-10', total: 60.00, items: ['Shawarma', 'Juice'] },
+                { id: '#ORD013', date: '2025-05-15', total: 90.00, items: ['Pasta', 'Salad'] },
+                { id: '#ORD014', date: '2025-05-20', total: 40.00, items: ['Sandwich', 'Soup'] },
+                { id: '#ORD015', date: '2025-05-25', total: 110.00, items: ['Steak', 'Dessert'] }
+            ], type: 'loyal'}
+        ];
+
+        // New data for WhatsApp Campaigns
+        let whatsappCampaigns = [
+            {
+                id: 'CAMP001',
+                name: 'Eid Al-Fitr Special',
+                dateSent: '2025-04-10',
+                audience: 'All Customers',
+                message: 'Celebrate Eid with our special offers! Enjoy 20% off all pizzas this week.',
+                mediaUrl: '',
+                websiteLink: 'https://yourrestaurant.com/eid-offer',
+                status: {
+                    sent: 100,
+                    delivered: 95,
+                    read: 80,
+                    failed: 5,
+                    breakdown: [
+                        { customerId: 'C001', status: 'Read' },
+                        { customerId: 'C002', status: 'Delivered' },
+                        { customerId: 'C003', status: 'Read' },
+                        { customerId: 'C004', status: 'Failed' },
+                        { customerId: 'C005', status: 'Read' },
+                        { customerId: 'C006', status: 'Read' }, // Added Husman
+                        // ... more customers
+                    ]
+                }
+            },
+            {
+                id: 'CAMP002',
+                name: 'Loyalty Program Launch',
+                dateSent: '2025-05-01',
+                audience: 'Loyal Customers',
+                message: 'Exciting news! Our new loyalty program is here. Earn points with every purchase.',
+                mediaUrl: 'https://placehold.co/300x180/4299e1/ffffff?text=Loyalty+Program',
+                websiteLink: 'https://yourrestaurant.com/loyalty',
+                status: {
+                    sent: 50,
+                    delivered: 48,
+                    read: 40,
+                    failed: 2,
+                    breakdown: [
+                        { customerId: 'C001', status: 'Read' },
+                        { customerId: 'C003', status: 'Read' },
+                        { customerId: 'C005', status: 'Delivered' },
+                        { customerId: 'C006', status: 'Read' }, // Added Husman
+                        // ... more customers
+                    ]
+                }
+            }
+        ];
+
+        // New data for Payment Gateways
+        let paymentGateways = [
+            { name: 'Stripe', enabled: true },
+            { name: 'PayPal', enabled: false },
+            { name: 'Apple Pay', enabled: true },
+            { name: 'Google Pay', enabled: false },
+            { name: 'Mada Card', enabled: true } // Added Mada Card
+        ];
+
+
+        // --- Language Translations ---
+        const translations = {
+            en: {
+                adminPanelTitle: "Admin Panel",
+                // Add sidebar menu item translations
+                "menu-businessSummary": "Business Summary",
+                "menu-users": "Users",
+                "menu-menu": "Menu",
+                "menu-control": "System Control",
+                "menu-report": "Report",
+                "menu-whatsapp": "WhatsApp Campaign",
+                "menu-loyalty": "Loyalty Points",
+                "menu-branchMaps": "Branch Maps",
+                "menu-offers": "Offers",
+                "menu-pos": "POS Integration",
+                "menu-deliveryDeals": "Logistics Delivery Company",
+                "menu-foodDeliveryApps": "App Food Delivery",
+                "menu-paymentGateway": "Payment Gateway",
+
+                summaryTitle: "📊 Business Summary (Today)",
+                branchFilterLabel: "Filter by Branch:",
+                branchAll: "All Branches",
+                branchAlMalikFaisal: "Al Malik Faisal",
+                branchAlRawdah: "Al Rawdah",
+                branchAlWurudSummary: "Al Wurud",
+                kpiTotalOrders: "Total Orders Today:",
+                kpiCompletedOrders: "Completed Orders:",
+                kpiPendingOrders: "Pending Orders:",
+                kpiRejectedOrders: "Rejected Orders:",
+                kpiAvgPrepTime: "Average Prep Time:",
+                kpiRevenueEstimate: "Revenue Estimate:",
+                rejectedLogTitle: "❌ Rejected Orders Log",
+                thOrderId: "Order ID",
+                thRejectedBy: "Rejected By",
+                thTime: "Time",
+                ordersByAppTitle: "📱 Orders by App (Today)",
+                thPlatform: "Platform",
+                thOrders: "Orders",
+                thRevenue: "Revenue",
+                activeBranchesTitle: "🏢 Active Branches",
+                thBranch: "Branch",
+                thBranchOrders: "Orders",
+                thBranchRevenue: "Revenue",
+                thTopItem: "Top Item",
+                usersTitle: "👥 User Management",
+                addUserBtn: "➕ Add New User",
+                userThId: "User ID",
+                userThName: "Name",
+                userThRole: "Role",
+                userThBranch: "Branch",
+                userThActions: "Actions",
+                menuManagementTitle: "🍽️ Menu Management",
+                addMealBtn: "➕ Add Meal",
+                menuDescription: "Below is your restaurant menu with calories included.",
+                backToCategoriesBtn: "← Back to All Categories",
+                systemControlTitle: "⚙️ System Control",
+                appStatusTitle: "App Status",
+                appStatusLabel: "App Online:",
+                notificationSettingsTitle: "Notification Settings",
+                newOrderNotifLabel: "New Order Notifications:",
+                lowStockNotifLabel: "Low Stock Alerts:",
+                logisticsIntegrationTitle: "Manage company Delivery",
+                reportTitle: "📈 Sales Report",
+                reportFilterTitle: "Filter Reports",
+                reportPeriodLabel: "Select Period:",
+                periodDay: "Day",
+                periodWeek: "Week",
+                periodMonth: "Month",
+                periodQuarter: "Quarter",
+                deliveryChartTitle: "Delivery Performance by Company",
+                deliveryLogTitle: "Delivery Log",
+                filterLabel: "Filter by Company:",
+                deliveryThId: "Order ID",
+                deliveryThCompany: "Company",
+                deliveryThStatus: "Status",
+                deliveryThOrders: "Orders",
+                deliveryThDeliveryTime: "Delivery Time",
+                whatsappTitle: "💬 WhatsApp Campaign",
+                composeTabBtn: "Compose Campaign",
+                reportsTabBtn: "Campaign Reports",
+                integrationTabBtn: "WhatsApp API Integration",
+                composeMessageTitle: "Compose Message",
+                messageLabel: "Message Content:",
+                messagePlaceholder: "Enter your message here...",
+                audienceLabel: "Target Audience:",
+                audienceAll: "All Customers",
+                audienceLoyal: "Loyal Customers",
+                audienceNew: "New Customers",
+                sendMessageBtnText: "Send Campaign Message",
+                loyaltyTitle: "⭐ Loyalty Points",
+                loyaltySettingsTitle: "Loyalty Settings",
+                pointsPerSARLabel: "Points per SAR spent:",
+                sarPerPointLabel: "SAR equivalent per point:",
+                saveLoyaltySettingsBtn: "Save Loyalty Settings",
+                branchMapsTitle: "🗺️ Branch Maps",
+                addBranchBtn: "➕ Add New Branch",
+                branchLocationTitle: "Branch Locations",
+                mapPlaceholder: "Map integration goes here...",
+                selectBranchLabel: "Select Branch:",
+                branchYarmouk: "Al Yarmouk",
+                branchMugharzat: "Al Mugharzat",
+                branchWurud: "Al Wurud",
+                viewOnMapBtn: "View on Map",
+                offersSectionTitle: "🎁 Offers Management",
+                addOfferBtn: "➕ Add New Offer",
+                offerThName: "Offer Name",
+                offerThItem: "Linked Item",
+                offerThDiscount: "Discount Price",
+                offerThValidUntil: "Valid Until",
+                offerThActions: "Actions",
+                posTitle: "🛒 POS Integration",
+                posStatusTitle: "POS Connection Status:",
+                deliveryDealsTitle: "🚚 Logistics Delivery Company",
+                addDealBtn: "➕ Add New Deal",
+                dealThName: "Deal Name",
+                dealThPlatform: "Platform",
+                dealThDiscount: "Discount (%):",
+                dealThValidUntil: "Valid Until:",
+                dealThActions: "Actions",
+                addUserModalTitle: "Add New User",
+                userNameLabel: "Name:",
+                userNamePlaceholder: "Enter user's name",
+                userPasswordLabel: "Password:",
+                userPasswordPlaceholder: "Enter password",
+                confirmPasswordLabel: "Confirm Password:",
+                confirmPasswordPlaceholder: "Confirm password",
+                passwordMismatchError: "Passwords do not match.",
+                userRoleLabel: "Role:",
+                roleAdmin: "Admin",
+                roleCashier: "Cashier",
+                roleManager: "Manager",
+                roleCustom: "Custom Role",
+                defineCustomPrivilegesTitle: "Define Custom Privileges",
+                userBranchLabel: "Branch:",
+                userBranchPlaceholder: "Enter user's branch", // This will no longer be used for dropdown
+                saveUserBtn: "Save User",
+                addMealModalTitle: "Add New Meal",
+                mealNameLabel: "Meal Name:",
+                mealNamePlaceholder: "e.g., Margherita Pizza",
+                mealCategoryLabel: "Category:",
+                mealCategorySelect: "-- Select or Add New --",
+                newMealCategoryPlaceholder: "New Category Name (optional)",
+                mealPriceLabel: "Price (SAR):",
+                mealPricePlaceholder: "e.g., 35.00",
+                mealCaloriesLabel: "Calories:",
+                mealCaloriesPlaceholder: "e.g., 600",
+                mealImageLabel: "Image URL (Optional):",
+                mealImagePlaceholder: "e.g., https://placehold.co/300x150",
+                saveMealBtn: "Save Meal",
+                addOfferModalTitle: "Add New Offer",
+                offerNameLabel: "Offer Name:",
+                offerNamePlaceholder: "e.g., Buy One Get One Free",
+                linkedItemLabel: "Linked Item:",
+                linkedItemPlaceholder: "e.g., Pizza",
+                discountPriceLabel: "Discount Price (SAR):",
+                discountPricePlaceholder: "e.g., 10.00",
+                validUntilLabel: "Valid Until:",
+                saveOfferBtn: "Save Offer",
+                addDealModalTitle: "Add New Delivery Deal",
+                dealNameLabel: "Deal Name:",
+                dealNamePlaceholder: "e.g., Free Delivery Weekend",
+                dealPlatformLabel: "Platform:",
+                dealDiscountLabel: "Discount (%):",
+                dealDiscountPlaceholder: "e.g., 15",
+                dealValidUntilLabel: "Valid Until:",
+                saveDealBtn: "Save Deal",
+                addBranchModalTitle: "Add New Branch",
+                branchNameLabel: "Branch Name:",
+                branchNamePlaceholder: "e.g., Downtown Branch",
+                branchAddressLabel: "Address:",
+                branchAddressPlaceholder: "e.g., 123 Main St",
+                branchLatLabel: "Latitude (Optional):",
+                branchLatPlaceholder: "e.g., 34.0522",
+                branchLonLabel: "Longitude (Optional):",
+                branchLonPlaceholder: "e.g., -118.2437",
+                saveBranchBtn: "Save Branch",
+                toggleLangBtn: "🌐 English",
+                riderDetailsModalTitle: "Rider Details",
+                riderIdLabel: "Rider ID:",
+                riderNameLabel: "Rider Name:",
+                amountNeededLabel: "Amount Needed:",
+                closeButton: "Close",
+                logisticsSummaryTitle: "Deliveries by Company",
+                logisticsOrderLogTitle: "Logistics Order Log",
+                logisticsThOrderId: "Order ID",
+                logisticsThCompany: "Company",
+                logisticsThRiderId: "Rider ID",
+                logisticsThRider: "Rider Name",
+                logisticsThStatus: "Status",
+                logisticsThDeliveryTime: "Delivery Time",
+                amountOwedByCompany: "Amount Owed by Company:",
+                posComingSoonBanner: "🚧 Coming Soon: Advanced POS Integrations! 🛒",
+                foodDeliveryAppsTitle: "📱 App Food Delivery Integrations",
+                foodDeliveryComingSoonBanner: "🍔 Coming Soon: Seamless Food Delivery App Integrations! 🍟",
+                foodAppStatusTitle: "Food App Connection Status:",
+                foodAppLastSync: "Last Sync: Never",
+                hungerStation: "HungerStation",
+                toYou: "ToYou",
+                jahez: "Jahez",
+                noon: "Noon",
+                keeta: "Keeta",
+                selectCustomersTitle: "Select Customers:",
+                customerThName: "Customer Name",
+                customerThTotalOrders: "Total Orders",
+                selectedCustomersCount: "Selected Customers:",
+                selectedCustomersTotalOrders: "Total Orders from Selected:",
+                mediaUploadLabel: "Upload Photo/Video (Optional):",
+                mediaFileName: "No file selected.",
+                websiteLinkLabel: "Website Link (Optional):",
+                insertLinkBtn: "Insert Link",
+                excelUploadLabel: "Upload Customer Numbers (Excel/CSV):",
+                excelFileName: "No file selected.",
+                processExcelBtn: "Process Excel",
+                whatsappCampaignSent: "WhatsApp campaign sent successfully!",
+                whatsappCampaignFailed: "Failed to send WhatsApp campaign. Please try again.",
+                noCustomerSelected: "Please select at least one customer first.",
+                campaignReportsTitle: "Campaign Reports",
+                reportThName: "Campaign Name",
+                reportThDate: "Date Sent",
+                reportThAudience: "Audience",
+                reportThSent: "Sent",
+                reportThDelivered: "Delivered",
+                reportThRead: "Read",
+                reportThFailed: "Failed",
+                reportThActions: "Actions",
+                campaignPerformanceChartTitle: "Campaign Performance Overview",
+                campaignDetailsModalTitle: "Campaign Details",
+                modalCampaignNameLabel: "Campaign Name:",
+                modalCampaignDateLabel: "Date Sent:",
+                modalCampaignAudienceLabel: "Audience:",
+                modalCampaignMessageLabel: "Message Content:",
+                modalCampaignMediaLabel: "Attached Media:",
+                modalCampaignMediaNone: "No media attached.",
+                modalCampaignWebsiteLabel: "Website Link:",
+                modalCampaignStatusBreakdownTitle: "Status Breakdown:",
+                modalStatusThCustomer: "Customer",
+                modalStatusThStatus: "Status",
+                customerDetailsModalTitle: "Customer Details",
+                customerDetailsNameLabel: "Customer Name:",
+                customerDetailsTotalOrdersLabel: "Total Orders:",
+                menuPaymentGateway: "Payment Gateway",
+                paymentGatewayTitle: "💳 Payment Gateway Integration",
+                paymentGatewayStatusTitle: "Payment Gateway Connection Status:",
+                paymentStatus: "Disconnected",
+                paymentGatewayLastSync: "Last Sync: Never",
+                paymentGatewayComingSoonBanner: "💳 Coming Soon: Secure Payment Gateway Integrations! 🔐",
+                stripe: "Stripe",
+                paypal: "PayPal",
+                applepay: "Apple Pay",
+                googlepay: "Google Pay",
+                madacard: "Mada Card",
+                viewPrivilegesBtn: "View Privileges",
+                viewPrivilegesModalTitle: "User Privileges:",
+                manageUsers: "Manage Users",
+                manageMenu: "Manage Menu",
+                viewReports: "View Reports",
+                manageOffers: "Manage Offers",
+                managePOS: "Manage POS Integration",
+                manageLogistics: "Manage Logistics Companies",
+                manageCompanyDelivery: "Manage company Delivery",
+                manageFoodApps: "Manage Food Delivery Apps",
+                managePayments: "Manage Payment Gateways",
+                manageWhatsappCampaigns: "Manage WhatsApp Campaigns",
+                manageLoyalty: "Manage Loyalty Points",
+                manageBranches: "Manage Branches",
+                yes: "Yes",
+                no: "No",
+                logoutButton: "Logout",
+                pageReloadingText: "Page is reloading to complete integration...",
+                facebookLoginPrompt: "Please log in with Facebook to finalize the WhatsApp API integration:",
+                loginWithFacebookBtn: "Login with Facebook",
+                facebookNote: "You will be redirected to Facebook for authentication.",
+                whatsappApiIntegratedSuccess: "🎉 WhatsApp API Integrated Successfully!",
+                canNowComposeCampaigns: "You can now compose and send campaigns.",
+                addChannelPrompt: "To send campaigns via WhatsApp, please add a new channel:",
+                addChannelBtn: "➕ Add New Channel",
+                selectCurrencyPrompt: "Please select your billing currency for WhatsApp API:",
+                connectWhatsAppBtn: "Connect",
+                closeRiderDetailsBtn: "إغلاق",
+                closeCampaignDetailsBtn: "إغلاق",
+                closeCustomerDetailsBtn: "إغلاق",
+                closeViewPrivilegesBtn: "إغلاق",
+            },
+            ar: {
+                adminPanelTitle: "لوحة التحكم",
+                // Add sidebar menu item translations
+                "menu-businessSummary": "ملخص الأعمال",
+                "menu-users": "المستخدمون",
+                "menu-menu": "القائمة",
+                "menu-control": "التحكم بالنظام",
+                "menu-report": "التقارير",
+                "menu-whatsapp": "حملة الواتساب",
+                "menu-loyalty": "نقاط الولاء",
+                "menu-branchMaps": "خرائط الفروع",
+                "menu-offers": "العروض",
+                "menu-pos": "تكامل نقاط البيع",
+                "menu-deliveryDeals": "شركات التوصيل اللوجستي",
+                "menu-foodDeliveryApps": "تطبيقات توصيل الطعام",
+                "menu-paymentGateway": "بوابة الدفع",
+
+                summaryTitle: "📊 ملخص الأعمال (اليوم)",
+                branchFilterLabel: "تصفية حسب الفرع:",
+                branchAll: "جميع الفروع",
+                branchAlMalikFaisal: "حي الملك فيصل",
+                branchAlRawdah: "الروضة",
+                branchAlWurudSummary: "الورود",
+                kpiTotalOrders: "إجمالي الطلبات اليوم:",
+                kpiCompletedOrders: "الطلبات المكتملة:",
+                kpiPendingOrders: "الطلبات المعلقة:",
+                kpiRejectedOrders: "الطلبات المرفوضة:",
+                kpiAvgPrepTime: "متوسط وقت التحضير:",
+                kpiRevenueEstimate: "تقدير الإيرادات:",
+                rejectedLogTitle: "❌ سجل الطلبات المرفوضة",
+                thOrderId: "رقم الطلب",
+                thRejectedBy: "رفض بواسطة",
+                thTime: "الوقت",
+                ordersByAppTitle: "📱 الطلبات حسب التطبيق (اليوم)",
+                thPlatform: "المنصة",
+                thOrders: "الطلبات",
+                thRevenue: "الإيرادات",
+                activeBranchesTitle: "🏢 الفروع النشطة",
+                thBranch: "الفرع",
+                thBranchOrders: "الطلبات",
+                thBranchRevenue: "الإيرادات",
+                thTopItem: "أكثر سلعة مبيعاً",
+                usersTitle: "👥 إدارة المستخدمين",
+                addUserBtn: "➕ إضافة مستخدم جديد",
+                userThId: "معرف المستخدم",
+                userThName: "الاسم",
+                userThRole: "الدور",
+                userThBranch: "الفرع",
+                userThActions: "الإجراءات",
+                menuManagementTitle: "🍽️ إدارة القائمة",
+                addMealBtn: "➕ إضافة وجبة",
+                menuDescription: "أدناه قائمة مطعمك مع السعرات الحرارية.",
+                backToCategoriesBtn: "← العودة إلى جميع الفئات",
+                systemControlTitle: "⚙️ التحكم بالنظام",
+                appStatusTitle: "حالة التطبيق",
+                appStatusLabel: "التطبيق متصل:",
+                notificationSettingsTitle: "إعدادات الإشعارات",
+                newOrderNotifLabel: "إشعارات الطلبات الجديدة:",
+                lowStockNotifLabel: "تنبيهات المخزون المنخفض:",
+                logisticsIntegrationTitle: "إدارة شركات التوصيل",
+                reportTitle: "📈 تقرير المبيعات",
+                reportFilterTitle: "تصفية التقارير",
+                reportPeriodLabel: "اختر الفترة:",
+                periodDay: "اليوم",
+                periodWeek: "الأسبوع",
+                periodMonth: "الشهر",
+                periodQuarter: "الربع",
+                deliveryChartTitle: "أداء التوصيل حسب الشركة",
+                deliveryLogTitle: "سجل التوصيل",
+                filterLabel: "تصفية حسب الشركة:",
+                deliveryThId: "رقم الطلب",
+                deliveryThCompany: "الشركة",
+                deliveryThStatus: "الحالة",
+                deliveryThOrders: "الطلبات",
+                deliveryThDeliveryTime: "وقت التوصيل",
+                whatsappTitle: "💬 حملة الواتساب",
+                composeTabBtn: "إنشاء حملة",
+                reportsTabBtn: "تقارير الحملات",
+                integrationTabBtn: "تكامل واتساب API",
+                composeMessageTitle: "إنشاء رسالة",
+                messageLabel: "محتوى الرسالة:",
+                messagePlaceholder: "أدخل رسالتك هنا...",
+                audienceLabel: "الجمهور المستهدف:",
+                audienceAll: "جميع العملاء",
+                audienceLoyal: "العملاء الأوفياء",
+                audienceNew: "العملاء الجدد",
+                sendMessageBtnText: "إرسال رسالة الحملة",
+                loyaltyTitle: "⭐ نقاط الولاء",
+                loyaltySettingsTitle: "إعدادات الولاء",
+                pointsPerSARLabel: "النقاط لكل ريال سعودي من الإنفاق:",
+                sarPerPointLabel: "ما يعادل الريال السعودي لكل نقطة:",
+                saveLoyaltySettingsBtn: "حفظ إعدادات الولاء",
+                branchMapsTitle: "🗺️ خرائط الفروع",
+                addBranchBtn: "➕ إضافة فرع جديد",
+                branchLocationTitle: "مواقع الفروع",
+                mapPlaceholder: "تكامل الخريطة هنا...",
+                selectBranchLabel: "اختر الفرع:",
+                branchYarmouk: "اليرموك",
+                branchMugharzat: "المغرزات",
+                branchWurud: "الورود",
+                viewOnMapBtn: "عرض على الخريطة",
+                offersSectionTitle: "🎁 إدارة العروض",
+                addOfferBtn: "➕ إضافة عرض جديد",
+                offerThName: "اسم العرض",
+                offerThItem: "السلعة المرتبطة",
+                offerThDiscount: "سعر الخصم",
+                offerThValidUntil: "صالح حتى",
+                offerThActions: "الإجراءات",
+                posTitle: "🛒 تكامل نقاط البيع",
+                posStatusTitle: "حالة اتصال نقاط البيع:",
+                deliveryDealsTitle: "🚚 شركات التوصيل اللوجستي",
+                addDealBtn: "➕ إضافة صفقة جديدة",
+                dealThName: "اسم الصفقة",
+                dealThPlatform: "المنصة",
+                dealThDiscount: "الخصم (%):",
+                dealThValidUntil: "صالح حتى:",
+                saveDealBtn: "حفظ الصفقة",
+                addUserModalTitle: "إضافة مستخدم جديد",
+                userNameLabel: "الاسم:",
+                userNamePlaceholder: "أدخل اسم المستخدم",
+                userPasswordLabel: "كلمة المرور:",
+                userPasswordPlaceholder: "أدخل كلمة المرور",
+                confirmPasswordLabel: "تأكيد كلمة المرور:",
+                confirmPasswordPlaceholder: "تأكيد كلمة المرور",
+                passwordMismatchError: "كلمات المرور غير متطابقة.",
+                userRoleLabel: "الدور:",
+                roleAdmin: "مسؤول",
+                roleCashier: "أمين صندوق",
+                roleManager: "مدير",
+                roleCustom: "دور مخصص",
+                defineCustomPrivilegesTitle: "تحديد الصلاحيات المخصصة",
+                userBranchLabel: "الفرع:",
+                userBranchPlaceholder: "أدخل فرع المستخدم", // This will no longer be used for dropdown
+                saveUserBtn: "حفظ المستخدم",
+                addMealModalTitle: "إضافة وجبة جديدة",
+                mealNameLabel: "اسم الوجبة:",
+                mealNamePlaceholder: "مثال: بيتزا مارجريتا",
+                mealCategoryLabel: "الفئة:",
+                mealCategorySelect: "-- اختر أو أضف جديد --",
+                newMealCategoryPlaceholder: "اسم فئة جديدة (اختياري)",
+                mealPriceLabel: "السعر (ريال سعودي):",
+                mealPricePlaceholder: "مثال: 35.00",
+                mealCaloriesLabel: "السعرات الحرارية:",
+                mealCaloriesPlaceholder: "مثال: 600",
+                mealImageLabel: "رابط الصورة (اختياري):",
+                mealImagePlaceholder: "مثال: https://placehold.co/300x150",
+                saveMealBtn: "حفظ الوجبة",
+                addOfferModalTitle: "إضافة عرض جديد",
+                offerNameLabel: "اسم العرض:",
+                offerNamePlaceholder: "مثال: اشترِ واحدًا واحصل على الآخر مجانًا",
+                linkedItemLabel: "السلعة المرتبطة:",
+                linkedItemPlaceholder: "مثال: بيتزا",
+                discountPriceLabel: "سعر الخصم (ريال سعودي):",
+                discountPricePlaceholder: "مثال: 10.00",
+                validUntilLabel: "صالح حتى:",
+                saveOfferBtn: "حفظ العرض",
+                addDealModalTitle: "إضافة صفقة توصيل جديدة",
+                dealNameLabel: "اسم الصفقة:",
+                dealNamePlaceholder: "مثال: عطلة نهاية أسبوع توصيل مجاني",
+                dealPlatformLabel: "المنصة:",
+                dealDiscountLabel: "الخصم (%):",
+                dealDiscountPlaceholder: "مثال: 15",
+                dealValidUntilLabel: "صالح حتى:",
+                saveDealBtn: "حفظ الصفقة",
+                addBranchModalTitle: "إضافة فرع جديد",
+                branchNameLabel: "اسم الفرع:",
+                branchNamePlaceholder: "مثال: فرع وسط المدينة",
+                branchAddressLabel: "العنوان:",
+                branchAddressPlaceholder: "مثال: شارع رئيسي 123",
+                branchLatLabel: "خط العرض (اختياري):",
+                branchLatPlaceholder: "مثال: 34.0522",
+                branchLonLabel: "خط الطول (اختياري):",
+                branchLonPlaceholder: "مثال: -118.2437",
+                saveBranchBtn: "حفظ الفرع",
+                toggleLangBtn: "🌐 العربية",
+                riderDetailsModalTitle: "تفاصيل السائق",
+                riderIdLabel: "معرف السائق:",
+                riderNameLabel: "اسم السائق:",
+                amountNeededLabel: "المبلغ المطلوب:",
+                closeButton: "إغلاق",
+                logisticsSummaryTitle: "التوصيلات حسب الشركة",
+                logisticsOrderLogTitle: "سجل طلبات الشحن",
+                logisticsThOrderId: "رقم الطلب",
+                logisticsThCompany: "الشركة",
+                logisticsThRiderId: "معرف السائق",
+                logisticsThRider: "اسم السائق",
+                logisticsThStatus: "الحالة",
+                logisticsThDeliveryTime: "وقت التوصيل",
+                amountOwedByCompany: "المبلغ المستحق من الشركة:",
+                posComingSoonBanner: "🚧 قريباً: تكاملات نقاط البيع المتقدمة! 🛒",
+                foodDeliveryAppsTitle: "📱 تكاملات تطبيقات توصيل الطعام",
+                foodDeliveryComingSoonBanner: "🍔 قريباً: تكاملات سلسة لتطبيقات توصيل الطعام! 🍟",
+                foodAppStatusTitle: "حالة اتصال تطبيق الطعام:",
+                foodAppLastSync: "آخر مزامنة: أبداً",
+                hungerStation: "هنقرستيشن",
+                toYou: "تويو",
+                jahez: "جاهز",
+                noon: "نون",
+                keeta: "كيتا",
+                selectCustomersTitle: "اختر العملاء:",
+                customerThName: "اسم العميل",
+                customerThTotalOrders: "إجمالي الطلبات",
+                selectedCustomersCount: "العملاء المختارون:",
+                selectedCustomersTotalOrders: "إجمالي الطلبات من المختارين:",
+                mediaUploadLabel: "تحميل صورة/فيديو (اختياري):",
+                mediaFileName: "لم يتم اختيار ملف.",
+                websiteLinkLabel: "رابط الموقع (اختياري):",
+                insertLinkBtn: "إدراج رابط",
+                excelUploadLabel: "تحميل أرقام العملاء (Excel/CSV):",
+                excelFileName: "لم يتم اختيار ملف.",
+                processExcelBtn: "معالجة ملف Excel",
+                whatsappCampaignSent: "تم إرسال حملة الواتساب بنجاح!",
+                whatsappCampaignFailed: "فشل إرسال حملة الواتساب. الرجاء المحاولة مرة أخرى.",
+                noCustomerSelected: "الرجاء اختيار عميل واحد على الأقل أولاً.",
+                campaignReportsTitle: "تقارير الحملات",
+                reportThName: "اسم الحملة",
+                reportThDate: "تاريخ الإرسال",
+                reportThAudience: "الجمهور",
+                reportThSent: "تم الإرسال",
+                reportThDelivered: "تم التسليم",
+                reportThRead: "تم القراءة",
+                reportThFailed: "فشل",
+                reportThActions: "الإجراءات",
+                campaignPerformanceChartTitle: "نظرة عامة على أداء الحملة",
+                campaignDetailsModalTitle: "تفاصيل الحملة",
+                modalCampaignNameLabel: "اسم الحملة:",
+                modalCampaignDateLabel: "تاريخ الإرسال:",
+                modalCampaignAudienceLabel: "الجمهور:",
+                modalCampaignMessageLabel: "محتوى الرسالة:",
+                modalCampaignMediaLabel: "الوسائط المرفقة:",
+                modalCampaignMediaNone: "لا توجد وسائط مرفقة.",
+                modalCampaignWebsiteLabel: "رابط الموقع:",
+                modalCampaignStatusBreakdownTitle: "تفاصيل الحالة:",
+                modalStatusThCustomer: "العميل",
+                modalStatusThStatus: "الحالة",
+                customerDetailsModalTitle: "تفاصيل العميل",
+                customerDetailsNameLabel: "اسم العميل:",
+                customerDetailsTotalOrdersLabel: "إجمالي الطلبات:",
+                menuPaymentGateway: "بوابة الدفع",
+                paymentGatewayTitle: "💳 تكامل بوابة الدفع",
+                paymentGatewayStatusTitle: "حالة اتصال بوابة الدفع:",
+                paymentStatus: "غير متصل",
+                paymentGatewayLastSync: "آخر مزامنة: أبداً",
+                paymentGatewayComingSoonBanner: "💳 قريباً: تكاملات بوابة الدفع الآمنة!  ",
+                stripe: "سترايب",
+                paypal: "باي بال",
+                applepay: "أبل باي",
+                googlepay: "جوجل باي",
+                madacard: "مدى",
+                viewPrivilegesBtn: "عرض الصلاحيات",
+                viewPrivilegesModalTitle: "صلاحيات المستخدم:",
+                manageUsers: "إدارة المستخدمين",
+                manageMenu: "إدارة القائمة",
+                viewReports: "عرض التقارير",
+                manageOffers: "إدارة العروض",
+                managePOS: "إدارة تكامل نقاط البيع",
+                manageLogistics: "إدارة شركات الشحن",
+                manageCompanyDelivery: "إدارة شركات التوصيل",
+                manageFoodApps: "إدارة تطبيقات توصيل الطعام",
+                managePayments: "إدارة بوابات الدفع",
+                manageWhatsappCampaigns: "إدارة حملات واتساب",
+                manageLoyalty: "إدارة نقاط الولاء",
+                manageBranches: "إدارة الفروع",
+                yes: "نعم",
+                no: "لا",
+                logoutButton: "تسجيل الخروج",
+                pageReloadingText: "جارٍ إعادة تحميل الصفحة لإكمال التكامل...",
+                facebookLoginPrompt: "الرجاء تسجيل الدخول باستخدام فيسبوك لإنهاء تكامل واتساب API:",
+                loginWithFacebookBtn: "تسجيل الدخول باستخدام فيسبوك",
+                facebookNote: "سيتم إعادة توجيهك إلى فيسبوك للمصادقة.",
+                whatsappApiIntegratedSuccess: "🎉 تم دمج واتساب API بنجاح!",
+                canNowComposeCampaigns: "يمكنك الآن إنشاء وإرسال الحملات.",
+                addChannelPrompt: "لإرسال الحملات عبر واتساب، يرجى إضافة قناة جديدة:",
+                addChannelBtn: "➕ إضافة قناة جديدة",
+                selectCurrencyPrompt: "الرجاء تحديد عملة الفوترة الخاصة بك لواجهة برمجة تطبيقات واتساب:",
+                connectWhatsAppBtn: "اتصال",
+                closeRiderDetailsBtn: "إغلاق",
+                closeCampaignDetailsBtn: "إغلاق",
+                closeCustomerDetailsBtn: "إغلاق",
+                closeViewPrivilegesBtn: "إغلاق",
+            }
+        };
+
+        // --- Helper Functions ---
+        function showSection(sectionId) {
+            document.querySelectorAll('section').forEach(section => {
+                section.classList.remove('active');
+            });
+            document.getElementById(sectionId).classList.add('active');
+
+            document.querySelectorAll('#sidebarMenu li').forEach(item => {
+                item.classList.remove('active-menu-item');
+            });
+            document.getElementById(`menu-${sectionId}`).classList.add('active-menu-item');
+
+            // Specific initialization for WhatsApp section when it becomes active
+            if (sectionId === 'whatsapp') {
+                showWhatsAppTab('compose'); // Default to compose tab
+                renderCustomerTable(); // Populate the customer table
+                // Clear message text and order info when section is shown
+                document.getElementById('messageText').value = '';
+                document.getElementById('customerSearchInput').value = ''; // Clear search
+                document.getElementById('selectAllCustomers').checked = false; // Uncheck select all
+                document.getElementById('targetAudience').value = 'all'; // Reset audience filter
+                updateSelectedCustomerInfo(); // Reset selected info
+                document.getElementById('mediaUpload').value = ''; // Clear file input
+                document.getElementById('mediaFileName').textContent = translations[currentLang].mediaFileName; // Reset file name display
+                document.getElementById('websiteLink').value = ''; // Clear website link
+                document.getElementById('excelUpload').value = ''; // Clear excel file input
+                document.getElementById('excelFileName').textContent = translations[currentLang].excelFileName; // Reset excel file name display
+                document.getElementById('sendMessageFeedback').classList.add('hidden'); // Hide feedback message
+                document.getElementById('sendMessageFeedback').textContent = ''; // Clear feedback message
+                renderWhatsAppCampaignsReport(); // Render reports when WhatsApp section is active
+            }
+        }
+
+        // --- User Management Functions ---
+        function renderUsersTable() {
+            const tableBody = document.getElementById('usersTable');
+            tableBody.innerHTML = '';
+            users.forEach(user => {
+                const row = tableBody.insertRow();
+                const translatedRole = translations[currentLang]['role' + user.role.charAt(0).toUpperCase() + user.role.slice(1)] || user.role;
+                row.innerHTML = `
+                    <td class="py-2 px-4">${user.id}</td>
+                    <td class="py-2 px-4">${user.name}</td>
+                    <td class="py-2 px-4">${translatedRole}</td>
+                    <td class="py-2 px-4">${user.branch}</td>
+                    <td class="py-2 px-4">
+                        <button class="btn-secondary text-sm py-1 px-3 mr-2" onclick="openViewPrivilegesModal('${user.id}')">${translations[currentLang].viewPrivilegesBtn}</button>
+                        <button class="btn-danger text-sm py-1 px-3" onclick="deleteUser('${user.id}')">Delete</button>
+                    </td>
+                `;
+            });
+        }
+
+        function openAddUserModal() {
+            document.getElementById('addUserModal').classList.remove('hidden');
+            // Reset form fields
+            document.getElementById('userName').value = '';
+            document.getElementById('userPassword').value = ''; // Clear password field
+            document.getElementById('confirmPassword').value = ''; // Clear confirm password field
+            document.getElementById('passwordMismatchError').classList.add('hidden'); // Hide error message
+            document.getElementById('userRole').value = 'admin'; // Default to admin
+            document.getElementById('userBranch').value = 'المغرزات'; // Default branch
+
+            // Hide custom privileges section initially
+            document.getElementById('customRolePrivileges').classList.add('hidden');
+            document.getElementById('privilegeCheckboxes').innerHTML = ''; // Clear checkboxes
+
+            // Populate privilege checkboxes (if custom role is selected later)
+            populatePrivilegeCheckboxes();
+        }
+
+        function closeAddUserModal() {
+            document.getElementById('addUserModal').classList.add('hidden');
+        }
+
+        function populatePrivilegeCheckboxes(currentPrivileges = {}) {
+            const privilegeCheckboxesDiv = document.getElementById('privilegeCheckboxes');
+            privilegeCheckboxesDiv.innerHTML = ''; // Clear existing checkboxes
+
+            for (const key in allPrivileges) {
+                const privilegeName = allPrivileges[key];
+                const isChecked = currentPrivileges[key] !== undefined ? currentPrivileges[key] : false; // Default to false if not explicitly set
+
+                const checkboxHtml = `
+                    <div class="flex items-center">
+                        <input type="checkbox" id="privilege-${key}" data-privilege-key="${key}" class="form-checkbox h-4 w-4 text-blue-600 rounded" ${isChecked ? 'checked' : ''}>
+                        <label for="privilege-${key}" class="ml-2 text-gray-700">${translations[currentLang][key] || privilegeName}</label>
+                    </div>
+                `;
+                privilegeCheckboxesDiv.insertAdjacentHTML('beforeend', checkboxHtml);
+            }
+        }
+
+        function toggleCustomRolePrivileges() {
+            const userRole = document.getElementById('userRole').value;
+            const customRolePrivilegesDiv = document.getElementById('customRolePrivileges');
+            const privilegeCheckboxesDiv = document.getElementById('privilegeCheckboxes');
+
+            if (userRole === 'custom') {
+                customRolePrivilegesDiv.classList.remove('hidden');
+                // For a new custom role, all checkboxes should be unchecked by default
+                populatePrivilegeCheckboxes({});
+            } else {
+                customRolePrivilegesDiv.classList.add('hidden');
+                privilegeCheckboxesDiv.innerHTML = ''; // Clear checkboxes when not custom
+            }
+        }
+
+
+        function saveUser() {
+            const userName = document.getElementById('userName').value;
+            const userPassword = document.getElementById('userPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            const userRole = document.getElementById('userRole').value;
+            const userBranch = document.getElementById('userBranch').value;
+            const passwordMismatchError = document.getElementById('passwordMismatchError');
+
+            // Clear previous error message
+            passwordMismatchError.classList.add('hidden');
+
+            if (!userName || !userPassword || !confirmPassword || !userRole || !userBranch) {
+                // In a real app, you'd show a more specific error message
+                console.error("Please fill in all user fields.");
+                return;
+            }
+
+            if (userPassword !== confirmPassword) {
+                passwordMismatchError.classList.remove('hidden');
+                return;
+            }
+
+            const newId = 'U' + (users.length + 1).toString().padStart(3, '0');
+            let userPrivileges = {};
+
+            if (userRole === 'custom') {
+                // Collect privileges from checkboxes
+                document.querySelectorAll('#privilegeCheckboxes input[type="checkbox"]').forEach(checkbox => {
+                    userPrivileges[checkbox.dataset.privilegeKey] = checkbox.checked;
+                });
+            } else {
+                // Assign default privileges for standard roles
+                userPrivileges = { ...rolesPrivileges[userRole] };
+            }
+
+            users.push({ id: newId, name: userName, password: userPassword, role: userRole, branch: userBranch, privileges: userPrivileges });
+            renderUsersTable();
+            closeAddUserModal();
+        }
+
+        function deleteUser(userId) {
+            users = users.filter(user => user.id !== userId);
+            renderUsersTable();
+        }
+
+        function openViewPrivilegesModal(userId) {
+            const user = users.find(u => u.id === userId);
+            if (!user) {
+                console.error("User not found for privileges view:", userId);
+                return;
+            }
+
+            const viewPrivilegesModal = document.getElementById('viewPrivilegesModal');
+            if (!viewPrivilegesModal) {
+                console.error("viewPrivilegesModal element not found. Cannot open privileges modal.");
+                return;
+            }
+            // Make the modal visible first, then populate its content
+            viewPrivilegesModal.classList.remove('hidden');
+
+            const privilegeUserNameElement = document.getElementById('privilegeUserName');
+            const privilegeUserRoleElement = document.getElementById('privilegeUserRole');
+            const userPrivilegesList = document.getElementById('userPrivilegesList');
+
+            // Detailed null checks and assignments
+            if (privilegeUserNameElement) {
+                privilegeUserNameElement.textContent = user.name;
+            } else {
+                console.error("privilegeUserName element not found. This is unexpected after modal visibility. Exiting openViewPrivilegesModal.");
+                closeViewPrivilegesModal(); // Close modal if critical element is missing
+                return;
+            }
+
+            const translatedRole = translations[currentLang]['role' + user.role.charAt(0).toUpperCase() + user.role.slice(1)] || user.role;
+            if (privilegeUserRoleElement) {
+                privilegeUserRoleElement.textContent = translatedRole;
+            } else {
+                console.error("privilegeUserRole element not found. Exiting openViewPrivilegesModal.");
+                closeViewPrivilegesModal();
+                return;
+            }
+
+            if (!userPrivilegesList) {
+                console.error("userPrivilegesList element not found. Exiting openViewPrivilegesModal.");
+                closeViewPrivilegesModal();
+                return;
+            }
+
+            userPrivilegesList.innerHTML = ''; // Clear previous content
+
+            for (const key in allPrivileges) {
+                const privilegeName = translations[currentLang][key] || allPrivileges[key];
+                const hasPrivilege = user.privileges[key] ? translations[currentLang].yes : translations[currentLang].no;
+                const textColor = user.privileges[key] ? 'text-green-600' : 'text-red-600';
+
+                const privilegeItem = document.createElement('p');
+                privilegeItem.className = `text-lg text-gray-700 flex justify-between items-center`;
+                privilegeItem.innerHTML = `<span>${privilegeName}:</span> <strong class="${textColor}">${hasPrivilege}</strong>`;
+                userPrivilegesList.appendChild(privilegeItem);
+            }
+        }
+
+        function closeViewPrivilegesModal() {
+            document.getElementById('viewPrivilegesModal').classList.add('hidden');
+        }
+
+        // --- Menu Management Functions ---
+        function renderMenuItems(categoryId = null) {
+            const categoriesContainer = document.getElementById('menuCategoriesContainer');
+            const itemsContainer = document.getElementById('menuItemsContainer');
+            const itemsGrid = document.getElementById('menuItemsGrid');
+
+            if (categoryId) {
+                // Show items for a specific category
+                categoriesContainer.classList.add('hidden');
+                itemsContainer.classList.remove('hidden');
+                itemsGrid.innerHTML = '';
+
+                const category = menuCategories.find(cat => cat.id === categoryId);
+                if (category) {
+                    // Add category title dynamically
+                    const categoryTitleElement = document.createElement('h3');
+                    categoryTitleElement.className = 'menu-category-title col-span-full';
+                    categoryTitleElement.textContent = category.name;
+                    itemsGrid.appendChild(categoryTitleElement);
+
+                    category.items.forEach(item => {
+                        const itemCard = document.createElement('div');
+                        itemCard.className = 'menu-item-card p-4';
+                        itemCard.innerHTML = `
+                            <img src="${item.imageUrl}" alt="${item.name}" class="rounded-lg mb-4">
+                            <h5 class="text-lg font-semibold text-gray-800">${item.name}</h5>
+                            <p class="text-gray-600">SAR ${item.price.toFixed(2)}</p>
+                            <p class="text-sm text-gray-500">${item.calories} Calories</p>
+                            <button class="btn-danger text-sm py-1 px-3 mt-4" onclick="deleteMenuItem('${categoryId}', '${item.id}')">Delete</button>
+                        `;
+                        itemsGrid.appendChild(itemCard);
+                    });
+                }
+            } else {
+                // Show all categories
+                categoriesContainer.classList.remove('hidden');
+                itemsContainer.classList.add('hidden');
+                categoriesContainer.innerHTML = ''; // Clear previous categories
+
+                menuCategories.forEach(category => {
+                    const categoryCard = document.createElement('div');
+                    categoryCard.className = 'category-card';
+                    categoryCard.onclick = () => renderMenuItems(category.id);
+                    categoryCard.innerHTML = `
+                        <img src="${category.categoryImageUrl}" alt="${category.name}" class="mb-4">
+                        <h5 class="text-xl font-semibold text-gray-800">${category.name}</h5>
+                    `;
+                    categoriesContainer.appendChild(categoryCard);
+                });
+            }
+        }
+
+        function showAllCategories() {
+            renderMenuItems();
+        }
+
+        function openAddMealModal() {
+            const mealCategorySelect = document.getElementById('mealCategory');
+            mealCategorySelect.innerHTML = `<option value="">${translations[currentLang].mealCategorySelect}</option>`; // Reset options
+            menuCategories.forEach(category => {
+                const option = document.createElement('option');
+                option.value = category.id;
+                option.textContent = category.name;
+                mealCategorySelect.appendChild(option);
+            });
+
+            mealCategorySelect.onchange = function() {
+                const newMealCategoryInput = document.getElementById('newMealCategory');
+                if (this.value === '') {
+                    newMealCategoryInput.classList.remove('hidden');
+                    newMealCategoryInput.required = true;
+                } else {
+                    newMealCategoryInput.classList.add('hidden');
+                    newMealCategoryInput.required = false;
+                }
+            };
+            document.getElementById('addMealModal').classList.remove('hidden');
+        }
+
+        function closeAddMealModal() {
+            document.getElementById('addMealModal').classList.add('hidden');
+            document.getElementById('mealName').value = '';
+            document.getElementById('mealPrice').value = '';
+            document.getElementById('mealCalories').value = '';
+            document.getElementById('mealImage').value = '';
+            document.getElementById('mealCategory').value = '';
+            document.getElementById('newMealCategory').value = '';
+            document.getElementById('newMealCategory').classList.add('hidden');
+        }
+
+        function saveMeal() {
+            const mealName = document.getElementById('mealName').value;
+            const mealPrice = parseFloat(document.getElementById('mealPrice').value);
+            const mealCalories = parseInt(document.getElementById('mealCalories').value);
+            const mealImage = document.getElementById('mealImage').value || 'https://placehold.co/300x180/e2e8f0/333333?text=Meal';
+            let selectedCategoryId = document.getElementById('mealCategory').value;
+            const newCategoryName = document.getElementById('newMealCategory').value;
+
+            if (mealName && !isNaN(mealPrice) && !isNaN(mealCalories)) {
+                if (!selectedCategoryId && newCategoryName) {
+                    // Add new category
+                    const newCategoryId = 'CAT' + (menuCategories.length + 1).toString().padStart(3, '0');
+                    menuCategories.push({
+                        id: newCategoryId,
+                        name: newCategoryName,
+                        categoryImageUrl: `https://placehold.co/80x80/4299e1/ffffff?text=${encodeURIComponent(newCategoryName)}`,
+                        items: []
+                    });
+                    selectedCategoryId = newCategoryId;
+                }
+
+                const targetCategory = menuCategories.find(cat => cat.id === selectedCategoryId);
+
+                if (targetCategory) {
+                    const newMealId = 'M' + (targetCategory.items.length + 1).toString().padStart(3, '0');
+                    targetCategory.items.push({
+                        id: newMealId,
+                        name: mealName,
+                        price: mealPrice,
+                        calories: mealCalories,
+                        imageUrl: mealImage
+                    });
+                    renderMenuItems(selectedCategoryId); // Re-render the current category
+                    closeAddMealModal();
+                } else {
+                    console.error("Please select an existing category or provide a new category name.");
+                }
+            } else {
+                console.error("Please fill in all meal fields correctly.");
+            }
+        }
+
+        function deleteMenuItem(categoryId, itemId) {
+            const category = menuCategories.find(cat => cat.id === categoryId);
+            if (category) {
+                category.items = category.items.filter(item => item.id !== itemId);
+                renderMenuItems(categoryId); // Re-render the current category
+            }
+        }
+
+        // --- Offers Management Functions ---
+        function renderOffersTable() {
+            const tableBody = document.getElementById('offersTable');
+            tableBody.innerHTML = '';
+            offers.forEach(offer => {
+                const row = tableBody.insertRow();
+                row.innerHTML = `
+                    <td class="py-2 px-4">${offer.name}</td>
+                    <td class="py-2 px-4">${offer.item}</td>
+                    <td class="py-2 px-4">SAR ${offer.discount.toFixed(2)}</td>
+                    <td class="py-2 px-4">${offer.validUntil}</td>
+                    <td class="py-2 px-4">
+                        <button class="btn-danger text-sm py-1 px-3" onclick="deleteOffer('${offer.id}')">Delete</button>
+                    </td>
+                `;
+            });
+        }
+
+        function openOfferModal() {
+            document.getElementById('offerModal').classList.remove('hidden');
+        }
+
+        function closeOfferModal() {
+            document.getElementById('offerModal').classList.add('hidden');
+            document.getElementById('offerName').value = '';
+            document.getElementById('linkedItem').value = '';
+            document.getElementById('discountPrice').value = '';
+            document.getElementById('validUntil').value = '';
+        }
+
+        function saveOffer() {
+            const offerName = document.getElementById('offerName').value;
+            const linkedItem = document.getElementById('linkedItem').value;
+            const discountPrice = parseFloat(document.getElementById('discountPrice').value);
+            const validUntil = document.getElementById('validUntil').value;
+
+            if (offerName && linkedItem && !isNaN(discountPrice) && validUntil) {
+                const newId = 'OFF' + (offers.length + 1).toString().padStart(3, '0');
+                offers.push({ id: newId, name: offerName, item: linkedItem, discount: discountPrice, validUntil: validUntil });
+                renderOffersTable();
+                closeOfferModal();
+            } else {
+                console.error("Please fill in all offer fields.");
+            }
+        }
+
+        function deleteOffer(offerId) {
+            offers = offers.filter(offer => offer.id !== offerId);
+            renderOffersTable();
+        }
+
+        // --- Delivery Deals Management Functions (now for Logistics Delivery Orders) ---
+        function renderLogisticsDeliveryOrdersTable() {
+            const tableBody = document.getElementById('logisticsDeliveryOrdersTable');
+            tableBody.innerHTML = '';
+            logisticsDeliveryOrders.forEach(order => {
+                const row = tableBody.insertRow();
+                row.innerHTML = `
+                    <td class="py-2 px-4">${order.orderId}</td>
+                    <td class="py-2 px-4">${order.company}</td>
+                    <td class="py-2 px-4">${order.riderId}</td>
+                    <td class="py-2 px-4">${order.riderName}</td>
+                    <td class="py-2 px-4">${order.status}</td>
+                    <td class="py-2 px-4">${order.deliveryTime}</td>
+                `;
+            });
+        }
+
+        function renderLogisticsDeliverySummary() {
+            const summaryContainer = document.getElementById('logisticsDeliverySummary');
+            summaryContainer.innerHTML = ''; // Clear previous summary
+
+            const deliveryCounts = {};
+            const amountOwed = {}; // Amount company owes restaurant
+
+            logisticsDeliveryOrders.forEach(order => {
+                deliveryCounts[order.company] = (deliveryCounts[order.company] || 0) + 1;
+                // Calculate amount company owes restaurant (revenue - company's fee)
+                amountOwed[order.company] = (amountOwed[order.company] || 0) + (order.orderRevenue - order.companyFee);
+            });
+
+            for (const company in deliveryCounts) {
+                const summaryItem = document.createElement('p');
+                summaryItem.className = 'text-lg text-gray-700';
+                summaryItem.textContent = `${company}: ${deliveryCounts[company]} deliveries | ${translations[currentLang].amountOwedByCompany} SAR ${amountOwed[company].toFixed(2)}`;
+                summaryContainer.appendChild(summaryItem);
+            }
+        }
+
+        function openAddDealModal() {
+            document.getElementById('addDealModal').classList.remove('hidden');
+        }
+
+        function closeAddDealModal() {
+            document.getElementById('addDealModal').classList.add('hidden');
+            document.getElementById('dealName').value = '';
+            document.getElementById('dealPlatform').value = 'HungerStation';
+            document.getElementById('dealDiscount').value = '';
+            document.getElementById('dealValidUntil').value = '';
+        }
+
+        function saveDeal() {
+            const dealName = document.getElementById('dealName').value;
+            const dealPlatform = document.getElementById('dealPlatform').value;
+            const dealDiscount = parseFloat(document.getElementById('dealDiscount').value);
+            const dealValidUntil = document.getElementById('dealValidUntil').value;
+
+            if (dealName && dealPlatform && !isNaN(dealDiscount) && dealValidUntil) {
+                const newId = 'DD' + (deliveryDeals.length + 1).toString().padStart(3, '0');
+                deliveryDeals.push({ id: newId, name: dealName, platform: dealPlatform, discount: dealDiscount, validUntil: dealValidUntil });
+                // Note: renderDeliveryDealsTable() is not defined, assuming it's meant to be renderLogisticsDeliveryOrdersTable()
+                // If you have a separate table for 'deals' you'll need to implement that.
+                // For now, no direct rendering for 'deliveryDeals' array is present in the original code.
+                closeAddDealModal();
+            } else {
+                console.error("Please fill in all deal fields.");
+            }
+        }
+
+        function deleteDeal(dealId) {
+            deliveryDeals = deliveryDeals.filter(deal => deal.id !== dealId);
+            // Note: renderDeliveryDealsTable() is not defined, assuming it's meant to be renderLogisticsDeliveryOrdersTable()
+            // If you have a separate table for 'deals' you'll need to implement that.
+            // For now, no direct rendering for 'deliveryDeals' array is present in the original code.
+        }
+
+        // --- POS Integration Functions (Placeholder) ---
+        function renderPosIntegrations() {
+            const posIntegrationList = document.getElementById('posIntegrationList');
+            posIntegrationList.innerHTML = `
+                <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                    <span class="text-lg text-gray-700">Square POS</span>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" value="" class="sr-only peer" checked>
+                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                    </label>
+                </div>
+                <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                    <span class="text-lg text-gray-700">Toast POS</span>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" value="" class="sr-only peer">
+                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                    </label>
+                </div>
+            `;
+        }
+
+        // --- Branch Maps Functions ---
+        function populateBranchSelect() {
+            const selectBranch = document.getElementById('selectBranch');
+            selectBranch.innerHTML = ''; // Clear existing options
+            branches.forEach(branch => {
+                const option = document.createElement('option');
+                option.value = branch.id;
+                option.textContent = branch.name;
+                selectBranch.appendChild(option);
+            });
+        }
+
+        function openAddBranchModal() {
+            document.getElementById('addBranchModal').classList.remove('hidden');
+        }
+
+        function closeAddBranchModal() {
+            document.getElementById('addBranchModal').classList.add('hidden');
+            document.getElementById('branchName').value = '';
+            document.getElementById('branchAddress').value = '';
+            document.getElementById('branchLat').value = '';
+            document.getElementById('branchLon').value = '';
+        }
+
+        function saveBranch() {
+            const branchName = document.getElementById('branchName').value;
+            const branchAddress = document.getElementById('branchAddress').value;
+            const branchLat = parseFloat(document.getElementById('branchLat').value);
+            const branchLon = parseFloat(document.getElementById('branchLon').value);
+
+            if (branchName && branchAddress) {
+                const newId = 'B' + (branches.length + 1).toString().padStart(3, '0');
+                branches.push({ id: newId, name: branchName, address: branchAddress, lat: isNaN(branchLat) ? null : branchLat, lon: isNaN(branchLon) ? null : branchLon });
+                populateBranchSelect();
+                closeAddBranchModal();
+            } else {
+                console.error("Please fill in required branch fields.");
+            }
+        }
+
+        function viewOnMap() {
+            const selectedBranchId = document.getElementById('selectBranch').value;
+            const branch = branches.find(b => b.id === selectedBranchId);
+            const mapContainer = document.getElementById('mapContainer');
+
+            if (branch && branch.lat && branch.lon) {
+                mapContainer.innerHTML = `<p class="text-gray-700">Map for ${branch.name} at Lat: ${branch.lat}, Lon: ${branch.lon}</p>`;
+                // In a real application, you would integrate a map API here (e.g., Google Maps)
+            } else {
+                mapContainer.innerHTML = `<p class="text-gray-500" id="mapPlaceholder">${translations[currentLang].mapPlaceholder} (No coordinates for selected branch)</p>`;
+            }
+        }
+
+        // --- Business Summary Functions ---
+        function filterBusinessSummaryByBranch() {
+            const selectedBranch = document.getElementById('branchFilter').value;
+            // In a real app, this would filter data based on the selected branch
+            console.log(`Filtering business summary by branch: ${selectedBranch}`);
+            // Update KPI boxes and tables based on filtered data
+            document.getElementById('kpi-totalOrders').innerHTML = `${translations[currentLang].kpiTotalOrders} <strong class="text-gray-900">${selectedBranch === 'all' ? 148 : 50}</strong>`;
+            document.getElementById('kpi-completedOrders').innerHTML = `${translations[currentLang].kpiCompletedOrders} <strong class="text-gray-900">${selectedBranch === 'all' ? 132 : 45}</strong>`;
+            document.getElementById('kpi-pendingOrders').innerHTML = `${translations[currentLang].kpiPendingOrders} <strong class="text-gray-900">${selectedBranch === 'all' ? 16 : 5}</strong>`;
+            document.getElementById('rejectedCount').textContent = selectedBranch === 'all' ? 0 : 0; // Assuming no rejected orders for specific branches for simplicity
+            document.getElementById('kpi-avgPrepTime').innerHTML = `${translations[currentLang].kpiAvgPrepTime} <strong class="text-gray-900">${selectedBranch === 'all' ? '11 min' : '10 min'}</strong>`;
+            document.getElementById('kpi-revenueEstimate').innerHTML = `${translations[currentLang].kpiRevenueEstimate} <strong class="text-green-600">SAR ${selectedBranch === 'all' ? '5,200' : '1,900'}</strong>`;
+        }
+
+        // --- Report Functions ---
+        function updateReportData() {
+            const period = document.getElementById('reportPeriod').value;
+            console.log(`Updating report data for period: ${period}`);
+
+            // Dummy data for chart based on period
+            let labels = [];
+            let data = [];
+            if (period === 'day') {
+                labels = [translations[currentLang].hungerStation, translations[currentLang].toYou, translations[currentLang].jahez, translations[currentLang].whatsapp];
+                data = [60, 50, 38, 25];
+            } else if (period === 'week') {
+                labels = [translations[currentLang].hungerStation, translations[currentLang].toYou, translations[currentLang].jahez, translations[currentLang].whatsapp, translations[currentLang].noon];
+                data = [400, 350, 280, 150, 100];
+            } else if (period === 'month') {
+                labels = [translations[currentLang].hungerStation, translations[currentLang].toYou, translations[currentLang].jahez, translations[currentLang].whatsapp, translations[currentLang].noon];
+                data = [1800, 1500, 1200, 700, 500];
+            } else if (period === 'quarter') {
+                labels = [translations[currentLang].hungerStation, translations[currentLang].toYou, translations[currentLang].jahez, translations[currentLang].whatsapp, translations[currentLang].noon];
+                data = [5000, 4500, 3800, 2000, 1500];
+            }
+
+            if (deliveryChartInstance) {
+                deliveryChartInstance.destroy();
+            }
+
+            const ctx = document.getElementById('deliveryChart').getContext('2d');
+            deliveryChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: translations[currentLang].thOrders, // Label for the dataset
+                        data: data,
+                        backgroundColor: [
+                            'rgba(255, 99, 132, 0.6)',
+                            'rgba(54, 162, 235, 0.6)',
+                            'rgba(255, 206, 86, 0.6)',
+                            'rgba(75, 192, 192, 0.6)',
+                            'rgba(153, 102, 255, 0.6)'
+                        ],
+                        borderColor: [
+                            'rgba(255, 99, 132, 1)',
+                            'rgba(54, 162, 235, 1)',
+                            'rgba(255, 206, 86, 1)',
+                            'rgba(75, 192, 192, 1)',
+                            'rgba(153, 102, 255, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+        }
+
+        function filterDeliveryByCompany() {
+            const filterValue = document.getElementById('deliveryCompanyFilter').value.toLowerCase();
+            const tableBody = document.getElementById('deliveryLogTable');
+            const rows = tableBody.getElementsByTagName('tr');
+
+            for (let i = 0; i < rows.length; i++) {
+                const companyCell = rows[i].getElementsByTagName('td')[1];
+                if (companyCell) {
+                    const companyName = companyCell.textContent || companyNameCell.innerText;
+                    if (companyName.toLowerCase().indexOf(filterValue) > -1) {
+                        rows[i].style.display = '';
+                    } else {
+                        rows[i].style.display = 'none';
+                    }
+                }
+            }
+        }
+
+        // --- Language Toggle ---
+        function toggleLanguage() {
+            currentLang = currentLang === 'en' ? 'ar' : 'en';
+            updateUIForLanguage();
+        }
+
+        function updateUIForLanguage() {
+            const htmlElement = document.documentElement;
+            htmlElement.lang = currentLang;
+            htmlElement.dir = currentLang === 'ar' ? 'rtl' : 'ltr';
+
+            // Set text alignment for the body based on direction
+            document.body.style.textAlign = currentLang === 'ar' ? 'right' : 'left';
+
+            // Adjust margin for sidebar for RTL
+            const asideElement = document.querySelector('aside');
+            if (asideElement) {
+                if (currentLang === 'ar') {
+                    asideElement.classList.remove('md:w-64');
+                    asideElement.classList.add('md:ml-auto', 'md:w-64'); // Push to right on desktop
+                } else {
+                    asideElement.classList.remove('md:ml-auto', 'md:w-64');
+                    asideElement.classList.add('md:w-64');
+                }
+            }
+
+            // Adjust position of logout and language toggle buttons
+            const logoutDiv = document.getElementById('logoutDiv');
+            if (logoutDiv) {
+                if (currentLang === 'ar') {
+                    logoutDiv.classList.remove('right-4');
+                    logoutDiv.classList.add('left-4');
+                } else {
+                    logoutDiv.classList.remove('left-4');
+                    logoutDiv.classList.add('right-4');
+                }
+            }
+
+            // Update the Logout button text
+            const logoutButton = document.getElementById('logoutButton');
+            if (logoutButton) {
+                logoutButton.textContent = translations[currentLang].logoutButton;
+            }
+
+
+            const languageToggleDiv = document.getElementById('languageToggleDiv');
+            if (languageToggleDiv) {
+                // The language toggle is already centered horizontally with -translate-x-1/2,
+                // so its `left` property should remain `left-1/2`.
+                // Only the text content needs to change.
+            }
+
+
+            const elements = document.querySelectorAll('[id]');
+            elements.forEach(element => {
+                // Defensive check: ensure element is not null/undefined
+                if (element) {
+                    const translationKey = element.id;
+                    // Apply translation if available
+                    if (translations[currentLang][translationKey]) {
+                        element.textContent = translations[currentLang][translationKey];
+                    }
+                    // Handle placeholders for input fields
+                    if (element.placeholder && translations[currentLang][element.id + 'Placeholder']) {
+                        element.placeholder = translations[currentLang][element.id + 'Placeholder'];
+                    }
+                } else {
+                    console.warn("An element retrieved by querySelectorAll was unexpectedly null.");
+                }
+            });
+
+            // Specific updates for button text that might not match ID or are dynamically set
+            const toggleLangBtn = document.getElementById('toggleLangBtn');
+            if (toggleLangBtn) {
+                toggleLangBtn.textContent = translations[currentLang].toggleLangBtn;
+            }
+
+            const posStatus = document.getElementById('posStatus');
+            if (posStatus) {
+                posStatus.textContent = currentLang === 'en' ? 'Disconnected' : translations[currentLang].paymentStatus;
+            }
+
+            const foodAppStatus = document.getElementById('foodAppStatus');
+            if (foodAppStatus) {
+                foodAppStatus.textContent = currentLang === 'en' ? 'Disconnected' : translations[currentLang].paymentStatus;
+            }
+
+            const paymentStatus = document.getElementById('paymentStatus');
+            if (paymentStatus) {
+                paymentStatus.textContent = currentLang === 'en' ? 'Disconnected' : translations[currentLang].paymentStatus;
+            }
+
+            // Update the "Coming Soon" banner text for Logistics
+            const comingSoonBanner = document.getElementById('comingSoonBanner');
+            if (comingSoonBanner) {
+                comingSoonBanner.textContent = translations[currentLang].comingSoonBanner || (currentLang === 'en' ? '🚀 Coming Soon: Advanced Logistics Features! 🚚' : '🚀 قريباً: ميزات لوجستية متقدمة! 🚚');
+            }
+
+            // Update the "Coming Soon" banner text for POS
+            const posComingSoonBanner = document.getElementById('posComingSoonBanner');
+            if (posComingSoonBanner) {
+                posComingSoonBanner.textContent = translations[currentLang].posComingSoonBanner || (currentLang === 'en' ? '🚧 Coming Soon: Advanced POS Integrations! 🛒' : '🚧 قريباً: تكاملات نقاط البيع المتقدمة! 🛒');
+            }
+
+            // Update the "Coming Soon" banner text for Food Delivery Apps
+            const foodDeliveryComingSoonBanner = document.getElementById('foodDeliveryComingSoonBanner');
+            if (foodDeliveryComingSoonBanner) {
+                foodDeliveryComingSoonBanner.textContent = translations[currentLang].foodDeliveryComingSoonBanner || (currentLang === 'en' ? '🍔 Coming Soon: Seamless Food Delivery App Integrations! 🍟' : '🍔 قريباً: تكاملات سلسة لتطبيقات توصيل الطعام! 🍟');
+            }
+
+            // Update the "Coming Soon" banner text for Payment Gateway
+            const paymentGatewayComingSoonBanner = document.getElementById('paymentGatewayComingSoonBanner');
+            if (paymentGatewayComingSoonBanner) {
+                paymentGatewayComingSoonBanner.textContent = translations[currentLang].paymentGatewayComingSoonBanner || (currentLang === 'en' ? '💳 Coming Soon: Secure Payment Gateway Integrations! 🔐' : '💳 قريباً: تكاملات بوابة الدفع الآمنة! 🔐');
+            }
+
+            // Update WhatsApp section specific elements
+            const selectedCustomersCountElem = document.getElementById('selectedCustomersCount');
+            if (selectedCustomersCountElem) {
+                selectedCustomersCountElem.textContent = translations[currentLang].selectedCustomersCount + ' 0'; // Reset count
+            }
+            const selectedCustomersTotalOrdersElem = document.getElementById('selectedCustomersTotalOrders');
+            if (selectedCustomersTotalOrdersElem) {
+                selectedCustomersTotalOrdersElem.textContent = translations[currentLang].selectedCustomersTotalOrders + ' 0'; // Reset total orders
+            }
+            const sendMessageBtnTextElem = document.getElementById('sendMessageBtnText');
+            if (sendMessageBtnTextElem) {
+                sendMessageBtnTextElem.textContent = translations[currentLang].sendMessageBtnText;
+            }
+            const mediaFileNameElem = document.getElementById('mediaFileName');
+            if (mediaFileNameElem) {
+                mediaFileNameElem.textContent = translations[currentLang].mediaFileName;
+            }
+            const insertLinkBtnElem = document.getElementById('insertLinkBtn');
+            if (insertLinkBtnElem) {
+                insertLinkBtnElem.textContent = translations[currentLang].insertLinkBtn;
+            }
+            const excelFileNameElem = document.getElementById('excelFileName');
+            if (excelFileNameElem) {
+                excelFileNameElem.textContent = translations[currentLang].excelFileName;
+            }
+            const processExcelBtnElem = document.getElementById('processExcelBtn');
+            if (processExcelBtnElem) {
+                processExcelBtnElem.textContent = translations[currentLang].processExcelBtn;
+            }
+            const composeTabBtnElem = document.getElementById('composeTabBtn');
+            if (composeTabBtnElem) {
+                composeTabBtnElem.textContent = translations[currentLang].composeTabBtn;
+            }
+            const reportsTabBtnElem = document.getElementById('reportsTabBtn');
+            if (reportsTabBtnElem) {
+                reportsTabBtnElem.textContent = translations[currentLang].reportsTabBtn;
+            }
+            const integrationTabBtnElem = document.getElementById('integrationTabBtn');
+            if (integrationTabBtnElem) {
+                integrationTabBtnElem.textContent = translations[currentLang].integrationTabBtn;
+            }
+
+            // Update modal button texts
+            const closeButtons = document.querySelectorAll('.modal-overlay button.btn-primary[id^="close"]');
+            closeButtons.forEach(button => {
+                const buttonId = button.id;
+                if (translations[currentLang][buttonId]) {
+                    button.textContent = translations[currentLang][buttonId];
+                }
+            });
+
+            // Re-render tables and dynamic content to apply language
+            renderUsersTable();
+            renderMenuItems();
+            renderOffersTable();
+            renderLogisticsDeliveryOrdersTable(); // Call new render function
+            renderLogisticsDeliverySummary(); // Call new summary render function
+            renderPosIntegrations();
+            renderLogisticsCompanies();
+            renderFoodDeliveryApps(); // Render new food delivery apps toggles
+            renderPaymentGateways(); // Render new payment gateways toggles
+            filterCustomersByAudience(); // Populate customer table for WhatsApp section (applies filters)
+            renderWhatsAppCampaignsReport(); // Render WhatsApp campaign reports
+            updateReportData(); // Re-render charts with updated labels
+        }
+
+        // --- Logistics Company Toggles (System Control) ---
+        function renderLogisticsCompanies() {
+            const container = document.getElementById('logisticsCompanyList');
+            container.innerHTML = ''; // Clear existing content
+
+            logisticsCompanies.forEach(company => {
+                const companyDiv = document.createElement('div');
+                companyDiv.className = 'flex items-center justify-between p-4 bg-gray-50 rounded-lg';
+
+                companyDiv.innerHTML = `
+                    <span class="text-lg text-gray-700">${company.name}</span>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" value="" class="sr-only peer" ${company.enabled ? 'checked' : ''} onchange="toggleLogisticsCompanyStatus('${company.name}')">
+                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                    </label>
+                `;
+                container.appendChild(companyDiv);
+            });
+        }
+
+        function toggleLogisticsCompanyStatus(companyName) {
+            const company = logisticsCompanies.find(c => c.name === companyName);
+            if (company) {
+                company.enabled = !company.enabled;
+                console.log(`${companyName} is now ${company.enabled ? 'enabled' : 'disabled'}`);
+                // In a real app, you would send this status update to your backend
+            }
+        }
+
+        function showRiderDetails(companyName) {
+            const company = logisticsCompanies.find(c => c.name === companyName);
+            if (company && company.rider) {
+                document.getElementById('modalRiderId').textContent = company.rider.id; // Display rider ID
+                document.getElementById('modalRiderName').textContent = company.rider.name;
+                document.getElementById('modalAmountNeeded').textContent = company.rider.amountNeeded;
+                document.getElementById('riderDetailsModal').classList.remove('hidden');
+            } else {
+                console.warn(`Rider details not found for ${companyName}`);
+            }
+        }
+
+        function closeRiderDetailsModal() {
+            document.getElementById('riderDetailsModal').classList.add('hidden');
+        }
+
+        // --- Food Delivery Apps Toggles ---
+        function renderFoodDeliveryApps() {
+            const container = document.getElementById('foodAppIntegrationList');
+            container.innerHTML = ''; // Clear existing content
+
+            foodDeliveryApps.forEach(app => {
+                const appDiv = document.createElement('div');
+                appDiv.className = 'flex items-center justify-between p-4 bg-gray-50 rounded-lg';
+
+                // Use the translation key for the app name
+                const appDisplayName = translations[currentLang][app.name.toLowerCase().replace(/\s/g, '')] || app.name;
+
+                appDiv.innerHTML = `
+                    <span class="text-lg text-gray-700">${appDisplayName}</span>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" value="" class="sr-only peer" ${app.enabled ? 'checked' : ''} onchange="toggleFoodAppStatus('${app.name}')">
+                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                    </label>
+                `;
+                container.appendChild(appDiv);
+            });
+        }
+
+        function toggleFoodAppStatus(appName) {
+            const app = foodDeliveryApps.find(a => a.name === appName);
+            if (app) {
+                app.enabled = !app.enabled;
+                console.log(`${appName} is now ${app.enabled ? 'enabled' : 'disabled'}`);
+                // In a real app, you would send this status update to your backend
+            }
+        }
+
+        // --- Payment Gateway Functions ---
+        function renderPaymentGateways() {
+            const container = document.getElementById('paymentGatewayList');
+            container.innerHTML = ''; // Clear existing content
+
+            paymentGateways.forEach(gateway => {
+                const gatewayDiv = document.createElement('div');
+                gatewayDiv.className = 'flex items-center justify-between p-4 bg-gray-50 rounded-lg';
+
+                // Use the translation key for the gateway name, convert to lowercase and remove spaces
+                const gatewayDisplayName = translations[currentLang][gateway.name.toLowerCase().replace(/\s/g, '')] || gateway.name;
+
+                gatewayDiv.innerHTML = `
+                    <span class="text-lg text-gray-700">${gatewayDisplayName}</span>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" value="" class="sr-only peer" ${gateway.enabled ? 'checked' : ''} onchange="togglePaymentGatewayStatus('${gateway.name}')">
+                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                    </label>
+                `;
+                container.appendChild(gatewayDiv);
+            });
+        }
+
+        function togglePaymentGatewayStatus(gatewayName) {
+            const gateway = paymentGateways.find(g => g.name === gatewayName);
+            if (gateway) {
+                gateway.enabled = !gateway.enabled;
+                console.log(`${gatewayName} is now ${gateway.enabled ? 'enabled' : 'disabled'}`);
+                // In a real app, you would send this status update to your backend
+            }
+        }
+
+
+        // --- WhatsApp Campaign Functions ---
+        let filteredCustomers = []; // Stores customers after audience and search filters
+
+        function showWhatsAppTab(tabName) {
+            // Deactivate all tabs and content
+            document.querySelectorAll('.tab-button').forEach(button => {
+                button.classList.remove('active-tab');
+            });
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active-tab-content');
+            });
+
+            // Activate the selected tab and content
+            document.getElementById(`${tabName}TabBtn`).classList.add('active-tab');
+            document.getElementById(`whatsapp${tabName.charAt(0).toUpperCase() + tabName.slice(1)}`).classList.add('active-tab-content');
+
+            if (tabName === 'compose') {
+                renderCustomerTable(); // Re-render customer table when switching back to compose
+                document.getElementById('sendMessageFeedback').classList.add('hidden'); // Hide feedback message
+                document.getElementById('sendMessageFeedback').textContent = ''; // Clear feedback message
+            } else if (tabName === 'reports') {
+                renderWhatsAppCampaignsReport(); // Render reports when switching to reports tab
+            } else if (tabName === 'integration') {
+                // When integration tab is shown, reset it to step 1
+                showIntegrationStep1();
+            }
+        }
+
+        function filterCustomersByAudience() {
+            const audienceType = document.getElementById('targetAudience').value;
+            const searchInput = document.getElementById('customerSearchInput').value.toLowerCase();
+
+            let tempCustomers = [...customers]; // Start with all customers
+
+            if (audienceType === 'loyal') {
+                tempCustomers = tempCustomers.filter(customer => customer.orders.length > 1);
+            } else if (audienceType === 'new') {
+                tempCustomers = tempCustomers.filter(customer => customer.orders.length === 1);
+            }
+            // If 'all', no filtering by type needed
+
+            // Apply search filter on top of audience filter
+            filteredCustomers = tempCustomers.filter(customer =>
+                customer.name.toLowerCase().includes(searchInput)
+            );
+
+            renderCustomerTable(filteredCustomers); // Render the filtered list
+        }
+
+        function renderCustomerTable(customersToRender = null) {
+            const tableBody = document.getElementById('customerTableBody');
+            tableBody.innerHTML = '';
+            const currentCustomers = customersToRender || customers; // Use filtered list if provided
+
+            currentCustomers.forEach(customer => {
+                const row = tableBody.insertRow();
+                row.className = 'hover:bg-gray-50 cursor-pointer'; // Add cursor-pointer for visual cue
+                // Add onclick event to show customer details modal
+                row.onclick = (event) => {
+                    // Prevent checkbox click from also triggering modal
+                    if (!event.target.classList.contains('customer-checkbox')) {
+                        showCustomerDetailsModal(customer.id);
+                    }
+                };
+                row.innerHTML = `
+                    <td class="py-2 px-4">
+                        <input type="checkbox" class="customer-checkbox" data-customer-id="${customer.id}" onchange="updateSelectedCustomerInfo()">
+                    </td>
+                    <td class="py-2 px-4">${customer.name}</td>
+                    <td class="py-2 px-4">${customer.orders.length}</td>
+                `;
+            });
+            // Ensure "Select All" is unchecked and info is reset when table is rendered
+            document.getElementById('selectAllCustomers').checked = false;
+            updateSelectedCustomerInfo();
+        }
+
+        function filterCustomerTable() {
+            // This function is now just a trigger to re-apply all filters
+            filterCustomersByAudience();
+        }
+
+        function toggleAllCustomers(checked) {
+            const checkboxes = document.querySelectorAll('#customerTableBody .customer-checkbox');
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = checked;
+            });
+            updateSelectedCustomerInfo();
+        }
+
+        function getSelectedCustomers() {
+            const selectedCustomerIds = [];
+            document.querySelectorAll('#customerTableBody .customer-checkbox:checked').forEach(checkbox => {
+                selectedCustomerIds.push(checkbox.dataset.customerId);
+            });
+            // Return customers from the *original* customers array to get full data,
+            // but only those whose IDs are in the selectedCustomerIds.
+            return customers.filter(customer => selectedCustomerIds.includes(customer.id));
+        }
+
+        function updateSelectedCustomerInfo() {
+            const selectedCustomers = getSelectedCustomers();
+            const selectedCount = selectedCustomers.length;
+            const totalOrders = selectedCustomers.reduce((sum, customer) => sum + customer.orders.length, 0);
+
+            document.getElementById('selectedCustomersCount').textContent = `${translations[currentLang].selectedCustomersCount} ${selectedCount}`;
+            document.getElementById('selectedCustomersTotalOrders').textContent = `${translations[currentLang].selectedCustomersTotalOrders} ${totalOrders}`;
+
+            // Update "Select All" checkbox state
+            const allCheckboxes = document.querySelectorAll('#customerTableBody .customer-checkbox');
+            const selectAllCheckbox = document.getElementById('selectAllCustomers');
+            if (allCheckboxes.length > 0 && selectedCount === allCheckboxes.length) {
+                selectAllCheckbox.checked = true;
+            } else {
+                selectAllCheckbox.checked = false;
+            }
+        }
+
+        function handleMediaUpload() {
+            const mediaInput = document.getElementById('mediaUpload');
+            const mediaFileNameElem = document.getElementById('mediaFileName');
+            if (mediaInput.files.length > 0) {
+                mediaFileNameElem.textContent = `Selected: ${mediaInput.files[0].name}`;
+                // In a real application, you'd handle the file upload to a server here.
+                // For demonstration, we just show the file name.
+            } else {
+                mediaFileNameElem.textContent = translations[currentLang].mediaFileName;
+            }
+        }
+
+        function handleExcelUpload() {
+            const excelInput = document.getElementById('excelUpload');
+            const excelFileNameElem = document.getElementById('excelFileName');
+            if (excelInput.files.length > 0) {
+                excelFileNameElem.textContent = `Selected: ${excelInput.files[0].name}`;
+            } else {
+                excelFileNameElem.textContent = translations[currentLang].excelFileName;
+            }
+        }
+
+        function processExcelFile() {
+            const excelInput = document.getElementById('excelUpload');
+            if (excelInput.files.length === 0) {
+                // Instead of console.warn, use a more visible feedback mechanism
+                const feedbackElem = document.getElementById('sendMessageFeedback');
+                feedbackElem.textContent = "Please select an Excel or CSV file to process.";
+                feedbackElem.className = 'mt-4 text-center text-red-500 font-semibold block';
+                return;
+            }
+            const file = excelInput.files[0];
+            console.log(`Processing Excel/CSV file: ${file.name}`);
+            // In a real application, you would use a library like SheetJS (xlsx) or PapaParse (csv)
+            // to read and parse the file content.
+            // After processing, you would typically update the 'customers' array and re-render the table.
+            // For now, this is just a placeholder.
+            const feedbackElem = document.getElementById('sendMessageFeedback');
+            feedbackElem.textContent = `File "${file.name}" processed (dummy action). Customer list would be updated.`;
+            feedbackElem.className = 'mt-4 text-center text-green-500 font-semibold block';
+        }
+
+        function insertLink() {
+            const websiteLink = document.getElementById('websiteLink').value;
+            const messageTextarea = document.getElementById('messageText');
+
+            if (websiteLink.trim() === "") {
+                const feedbackElem = document.getElementById('sendMessageFeedback');
+                feedbackElem.textContent = "Please enter a URL to insert.";
+                feedbackElem.className = 'mt-4 text-center text-red-500 font-semibold block';
+                return;
+            }
+
+            const start = messageTextarea.selectionStart;
+            const end = messageTextarea.selectionEnd;
+            const text = messageTextarea.value;
+            const linkText = websiteLink;
+
+            messageTextarea.value = text.substring(0, start) + linkText + text.substring(end, text.length);
+            messageTextarea.focus();
+            messageTextarea.selectionEnd = start + linkText.length; // Place cursor after inserted link
+        }
+
+        async function sendMessage() {
+            const messageText = document.getElementById('messageText').value;
+            const targetAudience = document.getElementById('targetAudience').value;
+            const selectedCustomers = getSelectedCustomers();
+            const mediaFile = document.getElementById('mediaUpload').files[0];
+            const websiteLink = document.getElementById('websiteLink').value;
+
+            const sendMessageBtn = document.getElementById('sendMessageBtn');
+            const sendMessageBtnText = document.getElementById('sendMessageBtnText');
+            const sendMessageSpinner = document.getElementById('sendMessageSpinner');
+            const sendMessageFeedback = document.getElementById('sendMessageFeedback');
+
+            if (selectedCustomers.length === 0) {
+                sendMessageFeedback.textContent = translations[currentLang].noCustomerSelected;
+                sendMessageFeedback.className = 'mt-4 text-center text-red-500 font-semibold block';
+                return;
+            }
+
+            if (messageText.trim() === "" && !mediaFile && websiteLink.trim() === "") {
+                sendMessageFeedback.textContent = "Message content, media file, or website link is required to send a campaign.";
+                sendMessageFeedback.className = 'mt-4 text-center text-red-500 font-semibold block';
+                return;
+            }
+
+            // Show loading state
+            sendMessageBtn.disabled = true;
+            sendMessageBtnText.classList.add('hidden');
+            sendMessageSpinner.classList.remove('hidden');
+            sendMessageFeedback.classList.add('hidden'); // Hide previous feedback
+
+            // Simulate API call
+            try {
+                // In a real application, you would make a fetch call to your backend
+                // Your backend would then interact with the WhatsApp Business API (Meta)
+                // Example:
+                // const response = await fetch('/api/send-whatsapp-campaign', {
+                //     method: 'POST',
+                //     headers: { 'Content-Type': 'application/json' },
+                //     body: JSON.stringify({
+                //         customerIds: selectedCustomers.map(c => c.id),
+                //         message: messageText,
+                //         mediaUrl: mediaFile ? 'url_to_uploaded_media' : '', // This would be a URL after server upload
+                //         websiteLink: websiteLink,
+                //         audience: targetAudience
+                //     })
+                // });
+                // const result = await response.json();
+
+                // For demonstration, simulate a delay and random success/failure
+                await new Promise(resolve => setTimeout(resolve, 2000)); // Simulate network delay
+                const success = Math.random() > 0.1; // 90% chance of success
+
+                if (success) {
+                    sendMessageFeedback.textContent = translations[currentLang].whatsappCampaignSent;
+                    sendMessageFeedback.className = 'mt-4 text-center text-green-500 font-semibold block';
+
+                    // Add the sent campaign to our dummy data
+                    const newCampaignId = 'CAMP' + (whatsappCampaigns.length + 1).toString().padStart(3, '0');
+                    const now = new Date();
+                    const dateString = `${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, '0')}-${now.getDate().toString().padStart(2, '0')}`;
+
+                    // Simulate status breakdown for the sent campaign
+                    const breakdown = selectedCustomers.map(customer => {
+                        const randomStatus = Math.random();
+                        let status = 'Delivered';
+                        if (randomStatus < 0.1) status = 'Failed'; // 10% fail
+                        else if (randomStatus < 0.3) status = 'Sent'; // 20% sent but not delivered/read
+                        else if (randomStatus < 0.7) status = 'Delivered'; // 40% delivered
+                        else status = 'Read'; // 30% read
+                        return { customerId: customer.id, status: status };
+                    });
+
+                    const sentCount = selectedCustomers.length;
+                    const deliveredCount = breakdown.filter(b => b.status === 'Delivered' || b.status === 'Read').length;
+                    const readCount = breakdown.filter(b => b.status === 'Read').length;
+                    const failedCount = breakdown.filter(b => b.status === 'Failed').length;
+
+
+                    whatsappCampaigns.push({
+                        id: newCampaignId,
+                        name: `Campaign ${newCampaignId}`, // Or prompt user for name
+                        dateSent: dateString,
+                        audience: (translations[currentLang]['audience' + targetAudience.charAt(0).toUpperCase() + targetAudience.slice(1)] || targetAudience) + ' Customers', // Capitalize and add 'Customers'
+                        message: messageText,
+                        mediaUrl: mediaFile ? 'https://placehold.co/300x180/e2e8f0/333333?text=Attached+Media' : '', // Placeholder for uploaded media
+                        websiteLink: websiteLink,
+                        status: {
+                            sent: sentCount,
+                            delivered: deliveredCount,
+                            read: readCount,
+                            failed: failedCount,
+                            breakdown: breakdown
+                        }
+                    });
+
+                    // Clear form fields after successful send
+                    document.getElementById('messageText').value = '';
+                    document.getElementById('mediaUpload').value = '';
+                    document.getElementById('mediaFileName').textContent = translations[currentLang].mediaFileName;
+                    document.getElementById('websiteLink').value = '';
+                    document.getElementById('targetAudience').value = 'all'; // Reset audience filter
+                    document.getElementById('customerSearchInput').value = ''; // Clear search
+                    filterCustomersByAudience(); // Re-render table with all customers and reset selections
+                    document.getElementById('selectAllCustomers').checked = false;
+                    updateSelectedCustomerInfo();
+
+                    // Switch to reports tab to show the new campaign
+                    showWhatsAppTab('reports');
+
+                } else {
+                    sendMessageFeedback.textContent = translations[currentLang].whatsappCampaignFailed;
+                    sendMessageFeedback.className = 'mt-4 text-center text-red-500 font-semibold block';
+                }
+            } catch (error) {
+                console.error('Error sending campaign:', error);
+                sendMessageFeedback.textContent = translations[currentLang].whatsappCampaignFailed;
+                sendMessageFeedback.className = 'mt-4 text-center text-red-500 font-semibold block';
+            } finally {
+                // Hide loading state
+                sendMessageBtn.disabled = false;
+                sendMessageBtnText.classList.remove('hidden');
+                sendMessageSpinner.classList.add('hidden');
+            }
+        }
+
+        // --- WhatsApp API Integration Simulation Steps ---
+        function showIntegrationStep1() {
+            document.getElementById('integrationStep1').classList.remove('hidden');
+            document.getElementById('integrationStep2').classList.add('hidden');
+            document.getElementById('integrationStep3').classList.add('hidden');
+            document.getElementById('integrationSuccess').classList.add('hidden');
+        }
+
+        function showIntegrationStep2() {
+            document.getElementById('integrationStep1').classList.add('hidden');
+            document.getElementById('integrationStep2').classList.remove('hidden');
+            document.getElementById('integrationStep3').classList.add('hidden');
+            document.getElementById('integrationSuccess').classList.add('hidden');
+        }
+
+        function showIntegrationStep3() {
+            document.getElementById('integrationStep1').classList.add('hidden');
+            document.getElementById('integrationStep2').classList.add('hidden');
+            document.getElementById('integrationStep3').classList.remove('hidden');
+            document.getElementById('integrationSuccess').classList.add('hidden');
+
+            // Simulate page reload and then show success after a short delay
+            setTimeout(() => {
+                showIntegrationSuccess();
+            }, 3000); // 3-second delay
+        }
+
+        function showIntegrationSuccess() {
+            document.getElementById('integrationStep1').classList.add('hidden');
+            document.getElementById('integrationStep2').classList.add('hidden');
+            document.getElementById('integrationStep3').classList.add('hidden');
+            document.getElementById('integrationSuccess').classList.remove('hidden');
+        }
+
+
+        // --- WhatsApp Campaign Reports Functions ---
+        function renderWhatsAppCampaignsReport() {
+            const tableBody = document.getElementById('campaignReportsTableBody');
+            tableBody.innerHTML = '';
+
+            // Sort campaigns by date sent, newest first
+            const sortedCampaigns = [...whatsappCampaigns].sort((a, b) => new Date(b.dateSent) - new Date(a.dateSent));
+
+            sortedCampaigns.forEach(campaign => {
+                const row = tableBody.insertRow();
+                const translatedAudience = translations[currentLang]['audience' + campaign.audience.split(' ')[0]] || campaign.audience; // Extract first word and translate
+                row.innerHTML = `
+                    <td class="py-2 px-4">${campaign.name}</td>
+                    <td class="py-2 px-4">${campaign.dateSent}</td>
+                    <td class="py-2 px-4">${translatedAudience}</td>
+                    <td class="py-2 px-4">${campaign.status.sent}</td>
+                    <td class="py-2 px-4">${campaign.status.delivered}</td>
+                    <td class="py-2 px-4">${campaign.status.read}</td>
+                    <td class="py-2 px-4">${campaign.status.failed}</td>
+                    <td class="py-2 px-4">
+                        <button class="btn-secondary text-sm py-1 px-3" onclick="viewCampaignDetails('${campaign.id}')">${translations[currentLang].viewPrivilegesBtn}</button>
+                    </td>
+                `;
+            });
+            updateCampaignPerformanceChart();
+        }
+
+        function updateCampaignPerformanceChart() {
+            if (campaignPerformanceChartInstance) {
+                campaignPerformanceChartInstance.destroy();
+            }
+
+            const totalSent = whatsappCampaigns.reduce((sum, camp) => sum + camp.status.sent, 0);
+            const totalDelivered = whatsappCampaigns.reduce((sum, camp) => sum + camp.status.delivered, 0);
+            const totalRead = whatsappCampaigns.reduce((sum, camp) => sum + camp.status.read, 0);
+            const totalFailed = whatsappCampaigns.reduce((sum, camp) => sum + camp.status.failed, 0);
+
+            const ctx = document.getElementById('campaignPerformanceChart').getContext('2d');
+            campaignPerformanceChartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: [
+                        translations[currentLang].reportThRead,
+                        translations[currentLang].reportThDelivered,
+                        translations[currentLang].reportThFailed,
+                        translations[currentLang].reportThSent // Remaining that are just 'sent'
+                    ],
+                    datasets: [{
+                        data: [
+                            totalRead,
+                            totalDelivered - totalRead, // Delivered but not read
+                            totalFailed,
+                            totalSent - totalDelivered - totalFailed // Sent but not delivered/failed
+                        ],
+                        backgroundColor: [
+                            'rgba(75, 192, 192, 0.8)', // Read (teal)
+                            'rgba(54, 162, 235, 0.8)', // Delivered (blue)
+                            'rgba(255, 99, 132, 0.8)', // Failed (red)
+                            'rgba(255, 206, 86, 0.8)'  // Sent (yellow)
+                        ],
+                        borderColor: [
+                            'rgba(75, 192, 192, 1)',
+                            'rgba(54, 162, 235, 1)',
+                            'rgba(255, 99, 132, 1)',
+                            'rgba(255, 206, 86, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                            labels: {
+                                font: {
+                                    size: 14
+                                }
+                            }
+                        },
+                        title: {
+                            display: false, // Title is handled by H4 tag
+                        }
+                    }
+                }
+            });
+        }
+
+        function viewCampaignDetails(campaignId) {
+            const campaign = whatsappCampaigns.find(c => c.id === campaignId);
+            if (!campaign) {
+                console.error("Campaign not found:", campaignId);
+                return;
+            }
+
+            document.getElementById('modalCampaignName').textContent = campaign.name;
+            document.getElementById('modalCampaignDate').textContent = campaign.dateSent;
+            document.getElementById('modalCampaignAudience').textContent = campaign.audience;
+            document.getElementById('modalCampaignMessage').textContent = campaign.message;
+
+            const mediaImageElem = document.getElementById('modalCampaignMediaImage');
+            const mediaVideoElem = document.getElementById('modalCampaignMediaVideo');
+            const mediaNoneElem = document.getElementById('modalCampaignMediaNone');
+            const mediaContainer = document.getElementById('modalCampaignMediaContainer');
+
+            // Reset media display
+            mediaImageElem.classList.add('hidden');
+            mediaVideoElem.classList.add('hidden');
+            mediaNoneElem.classList.add('hidden');
+            mediaContainer.classList.remove('hidden'); // Ensure container is visible
+
+            if (campaign.mediaUrl) {
+                if (campaign.mediaUrl.match(/\.(jpeg|jpg|gif|png)$/i)) {
+                    mediaImageElem.src = campaign.mediaUrl;
+                    mediaImageElem.classList.remove('hidden');
+                } else if (campaign.mediaUrl.match(/\.(mp4|webm|ogg)$/i)) {
+                    mediaVideoElem.src = campaign.mediaUrl;
+                    mediaVideoElem.classList.remove('hidden');
+                } else {
+                    // Fallback for unknown media types or if URL is just a placeholder
+                    mediaNoneElem.textContent = `${translations[currentLang].modalCampaignMediaLabel}: ${campaign.mediaUrl}`;
+                    mediaNoneElem.classList.remove('hidden');
+                }
+            } else {
+                mediaNoneElem.classList.remove('hidden');
+            }
+
+            const websiteLinkElem = document.getElementById('modalCampaignWebsiteLink');
+            const websiteLinkContainer = document.getElementById('modalCampaignWebsiteLabel');
+            if (campaign.websiteLink) {
+                websiteLinkElem.href = campaign.websiteLink;
+                websiteLinkElem.textContent = campaign.websiteLink;
+                websiteLinkContainer.classList.remove('hidden');
+            } else {
+                websiteLinkContainer.classList.add('hidden');
+            }
+
+
+            const statusTableBody = document.getElementById('modalCampaignStatusTableBody');
+            statusTableBody.innerHTML = '';
+            campaign.status.breakdown.forEach(item => {
+                const customer = customers.find(c => c.id === item.customerId);
+                const row = statusTableBody.insertRow();
+                row.innerHTML = `
+                    <td class="py-2 px-4">${customer ? customer.name : 'Unknown Customer'}</td>
+                    <td class="py-2 px-4">${item.status}</td>
+                `;
+            });
+
+            document.getElementById('campaignDetailsModal').classList.remove('hidden');
+        }
+
+        function closeCampaignDetailsModal() {
+            document.getElementById('campaignDetailsModal').classList.add('hidden');
+        }
+
+        // --- New Customer Details Modal Functions ---
+        function showCustomerDetailsModal(customerId) {
+            const customer = customers.find(c => c.id === customerId);
+            if (customer) {
+                document.getElementById('modalCustomerName').textContent = customer.name;
+                document.getElementById('modalCustomerTotalOrders').textContent = customer.orders.length; // Display the count of orders
+                document.getElementById('customerDetailsModal').classList.remove('hidden');
+            } else {
+                console.warn(`Customer with ID ${customerId} not found.`);
+            }
+        }
+
+        function closeCustomerDetailsModal() {
+            document.getElementById('customerDetailsModal').classList.add('hidden');
+        }
+
+
+        // --- Initialize on DOMContentLoaded ---
+        document.addEventListener('DOMContentLoaded', () => {
+            // Apply initial language settings FIRST to static elements
+            updateUIForLanguage();
+
+            // Then, render dynamic content
+            renderUsersTable();
+            renderMenuItems(); // This will now render categories initially
+            renderOffersTable();
+            renderLogisticsDeliveryOrdersTable(); // Render new logistics delivery orders table
+            renderLogisticsDeliverySummary(); // Render new summary render function
+            renderPosIntegrations();
+            populateBranchSelect();
+            filterBusinessSummaryByBranch(); // Initial call for branch filter
+            updateReportData(); // Initial chart and report data render
+            renderLogisticsCompanies(); // Render logistics companies toggles (System Control)
+            renderFoodDeliveryApps(); // Render new food delivery apps toggles
+            renderPaymentGateways(); // Render new payment gateways toggles
+            filterCustomersByAudience(); // Initial render of customer table with audience filter
+            renderWhatsAppCampaignsReport(); // Initial render of WhatsApp campaign reports
+
+            // Set default active menu item
+            const menuBusinessSummary = document.getElementById('menu-businessSummary');
+            if (menuBusinessSummary) {
+                menuBusinessSummary.classList.add('active-menu-item');
+            }
+        });
+    </script>
+
+<!-- 
+📣 تنبيه تلقائي لانتهاء نقاط الولاء عبر WhatsApp
+
+🔄 الهدف:
+تنبيه العميل قبل انتهاء نقاطه (مثلاً قبل 5 أيام من انتهاء الصلاحية) برسالة واتساب تلقائية.
+
+🧠 آلية العمل:
+1. يتم حفظ تاريخ انتهاء صلاحية كل نقطة عند إنشائها (expiryDate).
+2. يتم تشغيل مهمة يومية (Scheduled Task أو CRON Job).
+3. يتم فحص كل عميل:
+   إذا كانت النقاط ستنتهي خلال 5 أيام → يتم إرسال الرسالة التالية عبر API واتساب:
+
+📢 مثال نص الرسالة:
+عزيزي {اسم العميل}، لديك {عدد النقاط} نقطة ستنتهي خلال {X} أيام!
+استخدمها الآن للحصول على خصومات قبل انتهاء المهلة. 🎁
+
+✅ مثال منطق تنفيذي (Node.js أو Python):
+
+for each customer:
+  if (expiry_date - today <= 5 أيام):
+     send WhatsApp("📢 لديك نقاط ستنتهي قريبًا ...")
+
+⚙️ الأدوات المطلوبة:
+- قاعدة بيانات تحتوي: customer_id, phone, points, expiry_date
+- API متصل بـ WhatsApp Business (مثل Cloud API)
+- وظيفة ترسل الرسالة (sendWhatsAppMessage)
+
+📆 التوصية:
+تشغيل هذا المنطق بشكل يومي آلي (CRON كل صباح)
+-->
+
+</body>
+</html>
+ 
